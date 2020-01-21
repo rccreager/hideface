@@ -10,11 +10,13 @@ Next, edit your ssh_config file:
     sudo vim  /etc/ssh/ssh_config
 
 Add the line **ForwardX11 yes**.
-Note that you will get an X11 forwarding error when connecting to services that don't need X11 (such as github). 
-You can configure to not use X11 forwarding for certain servers like so:
 
-   Host github.com
-       ForwardX11 no 
+Note that you will get an X11 forwarding error when connecting to services that don't need X11 (such as github). 
+Configure your **/etc/ssh/ssh_config** file to not forward to certain servers like so:
+<pre>
+Host github.com
+    ForwardX11 no 
+</pre>
 
 Next, restart your ssh service:
 
