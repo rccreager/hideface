@@ -29,7 +29,7 @@ Finally, install some X11 tools and test that your forwarding works with **xcloc
 
 If you set it up right, a little clock will appear on your screen!
 
-## Installing apt-get packages
+## Installing apt-get and pip3 packages
 The script **apt_get.sh** includes sudo commands to install all the necessary systemwide tools.
 After that, you can use **requirements.txt** to install the needed python packages to your pip3.
 I would recommend setting up a virtual environment first (the second and third lines):
