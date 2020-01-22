@@ -12,6 +12,7 @@ Next, edit your ssh_config file:
 Add the line **ForwardX11 yes** under **Host** <b>*</b>.
 
 Also edit your sshd_config file:
+    
     sudo vim /etc/ssh/sshd_config
 
 Uncomment the lines **ForwardX11 yes** and **X11UseLocalhost no**.
