@@ -7,20 +7,23 @@ I'm including some optional directions for X11 forwarding; if you are working on
 When you ssh into your instance, make sure to enable the **-Y** flag.
 Next, edit your ssh_config file:
 
-    sudo vim  /etc/ssh/ssh_config
+    sudo vim /etc/ssh/ssh_config
 
 Add the line **ForwardX11 yes** under **Host** <b>*</b>.
 
-Note that you will get an X11 forwarding error when connecting to services that don't need X11 (such as github). 
-Configure your **/etc/ssh/ssh_config** file to not forward to certain servers like so:
-<pre>
-Host github.com
-    ForwardX11 no 
-</pre>
+Also edit your sshd_config file:
+    sudo vim /etc/ssh/sshd_config
 
-Next, restart your ssh service:
+Uncomment the lines **ForwardX11 yes** and **X11UseLocalhost no**.
 
-    sudo service ssh restart
+<!--- Note that you will get an X11 forwarding error when connecting to services that don't need X11 (such as github). ---> 
+<!--- Configure your **/etc/ssh/ssh_config** file to not forward to certain servers like so: --->
+<!--- <pre> --->
+<!--- Host github.com --->
+<!---    ForwardX11 no --->
+<!--- </pre> --->
+
+Next, logout and log back in for your changes to take effect. 
 
 Finally, install some X11 tools and test that your forwarding works with **xclock**:
 
