@@ -5,35 +5,40 @@
 import sys
 import dlib
 from skimage import io
-
 sys.path.insert(0, '/home/ubuntu/face-detection-adversarial-attack/Insight_Project_Framework')
-
 from Insight_Project_Framework import tools
 
 file_name = "51_Dresses_wearingdress_51_53.jpg"
-file_path = "/widerface/WIDER_train/images/51--Dresses/"
+file_path = "/wider-face/WIDER_train/images/51--Dresses/"
 
-tools.get_ground_truth('51_53', '/widerface/wider_face_split/wider_face_train_bbx_gt.txt')
-
+true_box_list = tools.get_ground_truth('51_53', '/wider-face/wider_face_split/wider_face_train_bbx_gt.txt')
+#print(true_box_list)
 
 image = io.imread(file_path + file_name)
 face_detector = dlib.get_frontal_face_detector()
-win = dlib.image_window()
 detected_faces = face_detector(image, 1)
-print("I found {} faces in the file {}".format(len(detected_faces), file_name))
-win.set_image(image)
+found_box_list = [tools.FaceBox(face.left(), face.top(), face.right()-face.left(), face.bottom()-face.top()) for face in detected_faces]
+#print(found_box_list)
 
+best_matches = tools.get_best_matches(true_box_list, found_box_list)
+print(*best_matches,sep="\n")
+
+#null_box = tools.FaceBox(0,0,0,0)
+#best_matches = [[found_box,null_box] for found_box in found_box_list]
+#
+#for box_pair in best_matches:
+#    for true_box in true_box_list:
+#        old_iou = box_pair[0].iou(box_pair[1])
+#        new_iou = box_pair[0].iou(true_box)
+#        if (new_iou > old_iou):
+#            box_pair[1] = true_box
+#print(best_matches)
+
+win = dlib.image_window()
+win.set_image(image)
 # Loop through each face we found in the image
 for i, face_rect in enumerate(detected_faces):
-
-	# Detected faces are returned as an object with the coordinates 
-	# of the top, left, right and bottom edges
-        width = face_rect.right() - face_rect.left()
-        height = face_rect.bottom() - face_rect.top()
-        print("- Face #{} found at Left: {} Top: {} Right: {} Bottom: {} Width: {} Height: {}".format(i, face_rect.left(), face_rect.top(), face_rect.right(), face_rect.bottom(), width, height))
-        # Draw a box around each face we found
-        win.add_overlay(face_rect)
-	        
+    # Draw a box around each face we found
+    win.add_overlay(face_rect)
 # Wait until the user hits <enter> to close the window	 
-
 dlib.hit_enter_to_continue()
