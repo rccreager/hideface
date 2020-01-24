@@ -5,24 +5,11 @@ I'm including some optional directions for X11 forwarding; if you are working on
 
 ## Setting up X11 forwarding (optional)
 When you ssh into your instance, make sure to enable the **-Y** flag.
-Next, edit your ssh_config file:
-
-    sudo vim /etc/ssh/ssh_config
-
-Add the line **ForwardX11 yes** under **Host** <b>*</b>.
-
-Also edit your sshd_config file:
+Edit your sshd_config file:
     
     sudo vim /etc/ssh/sshd_config
 
 Uncomment the lines **ForwardX11 yes** and **X11UseLocalhost no**.
-
-<!--- Note that you will get an X11 forwarding error when connecting to services that don't need X11 (such as github). ---> 
-<!--- Configure your **/etc/ssh/ssh_config** file to not forward to certain servers like so: --->
-<!--- <pre> --->
-<!--- Host github.com --->
-<!---    ForwardX11 no --->
-<!--- </pre> --->
 
 Next, logout and log back in for your changes to take effect. 
 
