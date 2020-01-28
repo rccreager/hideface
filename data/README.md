@@ -14,6 +14,8 @@ To download test data and labels:
 
     unzip wider_face_split.zip
 
+## Downloading a model
+
     wget "http://dlib.net/files/mmod_human_face_detector.dat.bz2"
 
     bzip2 -dk mmod_human_face_detector.dat.bz2

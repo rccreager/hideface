@@ -10,7 +10,7 @@ from skimage import io
 from matplotlib import pyplot as plt 
 from hideface import tools
 
-file_path = "/s3mnt/WIDER_train/images/51--Dresses/"
+file_path = "data/WIDER_train/images/51--Dresses/"
 files = [os.path.join(file_path, file_name) for file_name in os.listdir(file_path)] 
 n = 10
 files = random.sample(files,n)
@@ -25,7 +25,7 @@ for file_name in files:
 
     face_detector = dlib.get_frontal_face_detector()
 
-    true_box_list = tools.get_ground_truth_boxes(file_num, '/s3mnt/wider_face_split/wider_face_train_bbx_gt.txt')
+    true_box_list = tools.get_ground_truth_boxes(file_num, 'data/wider_face_split/wider_face_train_bbx_gt.txt')
     if (len(true_box_list) != 1): continue
     if (true_box_list[0].quality != tools.TruthBoxQuality(0,0,0,0,0,0)): continue
     
