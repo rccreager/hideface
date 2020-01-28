@@ -6,10 +6,8 @@ import dlib
 import re
 import random
 import os
-#from os.path import join
 from skimage import io 
 from matplotlib import pyplot as plt 
-sys.path.insert(0, '/home/ubuntu/face-detection-adversarial-attack/hideface')
 from hideface import tools
 
 file_path = "/s3mnt/WIDER_train/images/51--Dresses/"
