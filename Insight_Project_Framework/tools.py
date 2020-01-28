@@ -1,4 +1,5 @@
 import re
+from skimage.draw import polygon_perimeter
 
 class TruthBoxQuality:
     """
@@ -19,13 +20,16 @@ class TruthBoxQuality:
         self.blur = int(blur)
         self.expression = int(expression)
         self.illumination = int(illumination)
+        self.invalid = int(invalid)
         self.occlusion = int(occlusion)
         self.pose = int(pose)
-        self.invalid = int(invalid)
     def __str__(self):
         return "(Blur: {} Expression: {} Illumination: {} Invalid: {} Occlusion: {} Pose: {})".format(self.blur, self.expression, self.illumination, self.invalid, self.occlusion, self.pose)
     def __repr__(self):
         return str(self)
+    def __eq__(self, other):
+        if self.__class__ != other.__class__: return False
+        return self.__dict__ == other.__dict__
 
 class FaceBox:
     """
@@ -52,6 +56,9 @@ class FaceBox:
         return "(x1:{} y1:{} Width:{} Height:{} Quality: {})".format(self.x1, self.y1, self.width, self.height, self.quality) 
     def __repr__(self):
         return str(self)
+    def __eq__(self, other):
+        if self.__class__ != other.__class__: return False
+        return self.__dict__ == other.__dict__
     def area(self):
         """Area of FaceBox as a float"""
         return float(self.width*self.height)
@@ -78,8 +85,31 @@ class FaceBoxMatch:
         return "[True Box:{} Found Box:{} IoU:{}]".format(self.true_box, self.found_box, self.true_box.iou(self.found_box))
     def __repr__(self):
         return str(self)
+    def __eq__(self, other):
+        if self.__class__ != other.__class__: return False
+        return self.__dict__ == other.__dict__
 
-def get_ground_truth(image_number="", path_to_test_file=""):
+def get_found_boxes(image, face_detector):
+    """
+    Get a list of found FaceBox objects
+
+    Attributes:
+       image: the image of interest 
+       face_detector: the face detector you want to use
+
+    Returns a list of FaceBox objects found in the image   
+    """
+    found_faces = face_detector(image, 1)
+    found_box_list = []
+    for face in found_faces:
+        width = face.right()-face.left()
+        height = face.bottom()-face.top()
+        if (face.right() > image.shape[1]): width = image.shape[1] - face.left()
+        if (face.bottom() > image.shape[0]): height = image.shape[0] - face.bottom()
+        found_box_list.append(FaceBox(face.left(), face.top(), width, height))
+    return found_box_list
+
+def get_ground_truth_boxes(image_number="", path_to_test_file=""):
     """
     Get a list of ground truth FaceBox objects
 
@@ -125,3 +155,24 @@ def get_matches_to_truth(true_box_list=[], found_box_list=[]):
             if (new_iou > old_iou):
                 box_pair.found_box = found_box
     return best_matches
+
+def draw_boxes(image, true_box_list, found_box_list):
+    """
+    Draws the found and ground truth boxes on the image
+
+    Attributes:
+        image: the image of interest
+        true_box_list: a list of ground truth FaceBoxes
+        found_box_list: a list of FaceBoxes found via face detection
+
+    Returns None, just modifies image
+    """
+    for found_face in found_box_list:
+        rr,cc = polygon_perimeter([found_face.y1, found_face.y1, found_face.y1+found_face.height-1, found_face.y1+found_face.height-1],
+                                 [found_face.x1, found_face.x1+found_face.width-1, found_face.x1+found_face.width-1, found_face.x1])
+        image[rr, cc] = (255, 0, 0)
+    for true_face in true_box_list:
+        rr,cc = polygon_perimeter([true_face.y1, true_face.y1, true_face.y1+true_face.height-1, true_face.y1+true_face.height-1],
+                                 [true_face.x1, true_face.x1+true_face.width-1, true_face.x1+true_face.width-1, true_face.x1])
+        image[rr, cc] = (0, 0, 255)
+
