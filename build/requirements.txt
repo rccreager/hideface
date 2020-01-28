@@ -8,7 +8,9 @@ cloudpickle==1.2.2
 cycler==0.10.0
 decorator==4.4.1
 dlib==19.19.0
+filelock==3.0.12
 gast==0.2.2
+gdown==3.10.0
 google-auth==1.11.0
 google-auth-oauthlib==0.4.1
 google-pasta==0.1.8
@@ -35,6 +37,7 @@ pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycodestyle==2.5.0
 pyparsing==2.4.6
+PySocks==1.7.1
 python-dateutil==2.8.1
 PyWavelets==1.1.1
 requests==2.22.0
@@ -48,6 +51,7 @@ tensorflow==2.1.0
 tensorflow-estimator==2.1.0
 tensorflow-probability==0.9.0
 termcolor==1.1.0
+tqdm==4.42.0
 urllib3==1.25.8
 Werkzeug==0.16.1
 wrapt==1.11.2
