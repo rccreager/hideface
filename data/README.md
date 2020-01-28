@@ -13,3 +13,7 @@ To download test data and labels:
     wget "http://mmlab.ie.cuhk.edu.hk/projects/WIDERFace/support/bbx_annotation/wider_face_split.zip"
 
     unzip wider_face_split.zip
+
+    wget "http://dlib.net/files/mmod_human_face_detector.dat.bz2"
+
+    bzip2 -dk mmod_human_face_detector.dat.bz2
