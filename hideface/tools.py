@@ -93,11 +93,11 @@ def get_found_boxes(image, face_detector):
     """
     Get a list of found FaceBox objects
 
-    Attributes:
+    Args:
        image: the image of interest 
        face_detector: the face detector you want to use
-
-    Returns a list of FaceBox objects found in the image   
+    Returns:
+       found_box_list: list of FaceBox objects found in the image   
     """
     found_faces = face_detector(image, 1)
     found_box_list = []
@@ -113,11 +113,11 @@ def get_ground_truth_boxes(image_number="", path_to_test_file=""):
     """
     Get a list of ground truth FaceBox objects
 
-    Attributes:
+    Args:
         image_number: a string indicating which WiderFace image to locate
         path_to_test_file: a string giving the path to the ground truth WiderFace boxes
-    
-    Returns a list of FaceBox objects with TruthBoxQuality properly set 
+    Returns:
+        box_list: a list of FaceBox objects with TruthBoxQuality properly set 
     """
     box_list = []
     with open(path_to_test_file, 'r') as f:
@@ -140,11 +140,11 @@ def get_matches_to_truth(true_box_list=[], found_box_list=[]):
     Compare true FaceBox objects to found FaceBox objects and return a list of best matches
     If a true box doesn't have a match, it is matched to a null FaceBox
 
-    Attributes:
+    Args:
         true_box_list: a list of FaceBox objects for ground truth
         found_box_list: a list of FaceBox objects found via face detection
-
-    Returns a list of FaceBoxMatch objects
+    Returns:
+        best_match: a list of FaceBoxMatch objects, where match is found by largest IoU
     """
     null_box = FaceBox()
     best_matches = [FaceBoxMatch(true_box, null_box) for true_box in true_box_list]
@@ -160,12 +160,12 @@ def draw_boxes(image, true_box_list, found_box_list):
     """
     Draws the found and ground truth boxes on the image
 
-    Attributes:
+    Args:
         image: the image of interest
         true_box_list: a list of ground truth FaceBoxes
         found_box_list: a list of FaceBoxes found via face detection
-
-    Returns None, just modifies image
+    Returns:
+        None
     """
     for found_face in found_box_list:
         rr,cc = polygon_perimeter([found_face.y1, found_face.y1, found_face.y1+found_face.height-1, found_face.y1+found_face.height-1],
