@@ -1,4 +1,6 @@
 import re
+import os
+from skimage import io
 from skimage.draw import polygon_perimeter
 
 class TruthBoxQuality:
@@ -14,7 +16,7 @@ class TruthBoxQuality:
         pose: the angle of the face. 0=normal, 1=abnormal
 
     Methods:    
-        No methods so far
+        No (non-dunder) methods so far
     """
     def __init__(self, blur, expression, illumination, invalid, occlusion, pose):
         self.blur = int(blur)
@@ -89,17 +91,18 @@ class FaceBoxMatch:
         if self.__class__ != other.__class__: return False
         return self.__dict__ == other.__dict__
 
-def get_found_boxes(image, face_detector):
+def get_found_boxes(img_name, recognizer):
     """
     Get a list of found FaceBox objects
 
     Args:
-       image: the image of interest 
-       face_detector: the face detector you want to use
+       img_name: the name of image of interest 
+       recognizer: the face recognizer you want to use
     Returns:
        found_box_list: list of FaceBox objects found in the image   
     """
-    found_faces = face_detector(image, 1)
+    image = io.imread(img_name)
+    found_faces = recognizer(image, 1)
     found_box_list = []
     for face in found_faces:
         width = face.right()-face.left()
@@ -109,23 +112,23 @@ def get_found_boxes(image, face_detector):
         found_box_list.append(FaceBox(face.left(), face.top(), width, height))
     return found_box_list
 
-def get_ground_truth_boxes(image_number="", path_to_test_file=""):
+def get_ground_truth_boxes(img_name, truth_file):
     """
     Get a list of ground truth FaceBox objects
 
     Args:
-        image_number: a string indicating which WiderFace image to locate
-        path_to_test_file: a string giving the path to the ground truth WiderFace boxes
+        img_name: a string giving the name of the file  
+        truth_file: a string giving the path to the ground truth WiderFace file
     Returns:
         box_list: a list of FaceBox objects with TruthBoxQuality properly set 
     """
     box_list = []
-    with open(path_to_test_file, 'r') as f:
+    with open(truth_file, 'r') as f:
         lines = f.readlines()
         lines = [line.strip() for line in lines]
         for i in range(0, len(lines)):
             line = lines[i]
-            if (image_number+'.jpg') in line:
+            if (os.path.split(img_name)[1]) in line:
                 num_faces = int(lines[i+1])
                 for j in range(2,num_faces+2):
                     box_vals = re.findall(r"^[0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-2] [0,1] [0,1] [0,1] [0-2] [0,1]", lines[i+j])[0].split()
@@ -135,7 +138,7 @@ def get_ground_truth_boxes(image_number="", path_to_test_file=""):
                     box_list.append(box)
     return box_list                   
 
-def get_matches_to_truth(true_box_list=[], found_box_list=[]):
+def get_matches_to_truth(true_box_list, found_box_list):
     """
     Compare true FaceBox objects to found FaceBox objects and return a list of best matches
     If a true box doesn't have a match, it is matched to a null FaceBox
@@ -156,23 +159,19 @@ def get_matches_to_truth(true_box_list=[], found_box_list=[]):
                 box_pair.found_box = found_box
     return best_matches
 
-def draw_boxes(image, true_box_list, found_box_list):
+def draw_boxes(image, box_list, color_rgb):
     """
-    Draws the found and ground truth boxes on the image
+    Draw FaceBoxes onto image 
 
     Args:
-        image: the image of interest
-        true_box_list: a list of ground truth FaceBoxes
-        found_box_list: a list of FaceBoxes found via face detection
+        image: an image for drawing over
+        box_list: a list of FaceBox objects to draw
+        color_rgb: the color to draw the box, given as an RGB triplet 
     Returns:
         None
     """
-    for found_face in found_box_list:
-        rr,cc = polygon_perimeter([found_face.y1, found_face.y1, found_face.y1+found_face.height-1, found_face.y1+found_face.height-1],
-                                 [found_face.x1, found_face.x1+found_face.width-1, found_face.x1+found_face.width-1, found_face.x1])
-        image[rr, cc] = (255, 0, 0)
-    for true_face in true_box_list:
-        rr,cc = polygon_perimeter([true_face.y1, true_face.y1, true_face.y1+true_face.height-1, true_face.y1+true_face.height-1],
-                                 [true_face.x1, true_face.x1+true_face.width-1, true_face.x1+true_face.width-1, true_face.x1])
-        image[rr, cc] = (0, 0, 255)
+    for box in box_list:
+        rr,cc = polygon_perimeter([box.y1, box.y1, box.y1+box.height-1, box.y1+box.height-1],
+                                 [box.x1, box.x1+box.width-1, box.x1+box.width-1, box.x1])
+        image[rr, cc] = color_rgb
 
