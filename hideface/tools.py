@@ -84,7 +84,7 @@ class FaceBoxMatch:
         self.true_box = true_box
         self.found_box = found_box
     def __str__(self):
-        return "[True Box:{} Found Box:{} IoU:{}]".format(self.true_box, self.found_box, self.true_box.iou(self.found_box))
+        return "(True Box:{} Found Box:{} IoU:{})".format(self.true_box, self.found_box, self.true_box.iou(self.found_box))
     def __repr__(self):
         return str(self)
     def __eq__(self, other):
