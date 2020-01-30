@@ -16,8 +16,9 @@ jobs:
     - name: Install dependencies
       run: |
         source build/apt_get.sh
-        python -m pip install --upgrade pip
-        pip install -r build/requirements.txt
+        pip3 install -r build/requirements.txt
+        #python3 -m pip install --upgrade pip
+        #pip install -r build/requirements.txt
     - name: Lint with flake8
       run: |
         pip install flake8
