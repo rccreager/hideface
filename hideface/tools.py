@@ -109,12 +109,12 @@ def get_found_boxes(img_path, recognizer):
         found_box_list.append(FaceBox(face.left(), face.top(), width, height))
     return found_box_list
 
-def get_ground_truth_boxes(img_path, truth_file):
+def get_ground_truth_boxes(img_num, truth_file):
     """
     Get a list of ground truth FaceBox objects for a given image
 
     Args:
-        img_path: the path to the image of interest 
+        img_path: the WiderFace image number of interest (example: 51_528) 
         truth_file: a string giving the path to the ground truth WiderFace file
     Returns:
         box_list: a list of FaceBox objects with TruthBoxQuality properly set 
@@ -125,7 +125,7 @@ def get_ground_truth_boxes(img_path, truth_file):
         lines = [line.strip() for line in lines]
         for i in range(0, len(lines)):
             line = lines[i]
-            if (os.path.split(img_path)[1]) in line:
+            if img_num in line:
                 num_faces = int(lines[i+1])
                 for j in range(2,num_faces+2):
                     box_vals = re.findall(r"^[0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-2] [0,1] [0,1] [0,1] [0-2] [0,1]", lines[i+j])[0].split()
