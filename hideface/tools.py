@@ -71,17 +71,17 @@ class FaceBox:
 
 class FaceBoxMatch:
     """
-    A class for storing a match between a ground truth FaceBox and a found FaceBox
+    A class for storing a match between two FaceBox objects
 
     Attributes:
-        true_box: the ground truth FaceBox matched to the found_box
-        found_box: the found FaceBox matched to the true_box
+        target_box: the FaceBox you are attempting to match 
+        match_box: the FaaceBox matched to the target
     """
-    def __init__(self, true_box=FaceBox(), found_box=FaceBox()):
-        self.true_box = true_box
-        self.found_box = found_box
+    def __init__(self, target_box=FaceBox(), match_box=FaceBox()):
+        self.target_box = target_box
+        self.match_box = match_box
     def __str__(self):
-        return "(True Box:{} Found Box:{} IoU:{})".format(self.true_box, self.found_box, self.true_box.iou(self.found_box))
+        return "(Target Box:{} Match Box:{} IoU:{})".format(self.target_box, self.match_box, self.target_box.iou(self.match_box))
     def __repr__(self):
         return str(self)
     def __eq__(self, other):
@@ -125,7 +125,7 @@ def get_ground_truth_boxes(img_num, truth_file):
         lines = [line.strip() for line in lines]
         for i in range(0, len(lines)):
             line = lines[i]
-            if img_num in line:
+            if (img_num+'.jpg') in line:
                 num_faces = int(lines[i+1])
                 for j in range(2,num_faces+2):
                     box_vals = re.findall(r"^[0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-2] [0,1] [0,1] [0,1] [0-2] [0,1]", lines[i+j])[0].split()
@@ -135,25 +135,25 @@ def get_ground_truth_boxes(img_num, truth_file):
                     box_list.append(box)
     return box_list                   
 
-def get_matches_to_truth(true_box_list, found_box_list):
+def get_matches(target_box_list, potential_match_box_list):
     """
-    Compare true FaceBox objects to found FaceBox objects and return a list of best matches
-    If a true box doesn't have a match, it is matched to a null FaceBox
+    Given a target list of FaceBox objects, finds the best match for each target
+    from the potential_match_box_list
 
     Args:
-        true_box_list: a list of FaceBox objects for ground truth
-        found_box_list: a list of FaceBox objects found via face detection
+        target_box_list: a list of FaceBox objects 
+        potential_match_box_list: a list of FaceBox objects
     Returns:
         best_match: a list of FaceBoxMatch objects, where match is found by largest IoU
     """
     null_box = FaceBox()
-    best_matches = [FaceBoxMatch(true_box, null_box) for true_box in true_box_list]
+    best_matches = [FaceBoxMatch(target_box, null_box) for target_box in target_box_list]
     for box_pair in best_matches:
-        for found_box in found_box_list:
-            old_iou = box_pair.true_box.iou(box_pair.found_box)
-            new_iou = box_pair.true_box.iou(found_box)
+        for potential_match_box in potential_match_box_list:
+            old_iou = box_pair.target_box.iou(box_pair.match_box)
+            new_iou = box_pair.target_box.iou(potential_match_box)
             if (new_iou > old_iou):
-                box_pair.found_box = found_box
+                box_pair.match_box = potential_match_box
     return best_matches
 
 def draw_boxes(image, box_list, color_rgb):
@@ -166,7 +166,11 @@ def draw_boxes(image, box_list, color_rgb):
         color_rgb: the color to draw the box, given as an RGB triplet 
     """
     for box in box_list:
-        rr,cc = polygon_perimeter([box.y1, box.y1, box.y1+box.height-1, box.y1+box.height-1],
-                                 [box.x1, box.x1+box.width-1, box.x1+box.width-1, box.x1])
+        right_edge = box.x1+box.width-1
+        if (right_edge >= image.shape[1]): right_edge = image.shape[1]-1
+        bottom_edge = box.y1+box.height-1
+        if (bottom_edge>= image.shape[0]): bottom_edge = image.shape[0]-1
+        rr,cc = polygon_perimeter([box.y1, box.y1, bottom_edge, bottom_edge],
+                                 [box.x1, right_edge, right_edge, box.x1])
         image[rr, cc] = color_rgb
 
