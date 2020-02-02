@@ -18,6 +18,10 @@ jobs:
         source build/apt_get.sh
         pip3 install --upgrade pip 
         pip3 install -r build/requirements.txt
+        sudo apt-get install unzip
+        mkdir data && cd data
+        gdown https://drive.google.com/uc?id=0B6eKvaijfFUDQUUwd21EckhUbWs&export=download
+        unzip WIDER_train.zip
         #python3 -m pip install --upgrade pip
         #pip install -r build/requirements.txt
     - name: Lint with flake8
