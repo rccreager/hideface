@@ -107,7 +107,7 @@ class ImageLabels:
             filename = output_dir + '/image_'+ recognizer_name + holder_str + '_' + file_num+'.jpg'
             io.imsave(filename, image_copy)
             self.drawn_images.append(filename) 
-    def delete_drawn_images():
+    def delete_drawn_images(self):
         """
         Delete all drawn images and set self.drawn_images to []
         """

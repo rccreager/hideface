@@ -1,5 +1,6 @@
 import re
 import os
+import sys
 from skimage import io
 from skimage.draw import polygon_perimeter
 
@@ -99,7 +100,9 @@ def get_found_boxes(img_path, recognizer):
        found_box_list: list of FaceBox objects found in the image   
     """
     image = io.imread(img_path)
-    found_faces = recognizer(image, 1)
+    try: found_faces = recognizer(image, 1)
+    except:
+        sys.exit('get_found_boxes recognizer object failed to find boxes -- do you have the method defined properly?')
     found_box_list = []
     for face in found_faces:
         width = face.right()-face.left()
