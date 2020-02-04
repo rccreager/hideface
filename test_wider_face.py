@@ -32,7 +32,8 @@ for recognizer_name, _ in recognizer_dict.items():
         if (len(image_labels.found_box_dict[recognizer_name]) == 0): print('Could not find face prior to noise application, skipping'); continue
         
         epsilon = epsilon_start_value
-        noisy_image_labels = attacks.draw_and_return_noisy_image_labels(img_path, epsilon, output_dir).add_all_labels(truth_file, recognizer_dict)
+        attacked_img_path = attacks.create_noisy_image(img_path, epsilon, output_dir) 
+        noisy_image_labels = imagelabels.ImageLabels(attacked_img_path).add_all_labels(truth_file, recognizer_dict)
         while (epsilon < max_epsilon_value):
             if (len(noisy_image_labels.found_box_dict[recognizer_name]) == 0):
                 print('No boxes found with epsilon: ' + str(epsilon))
@@ -48,6 +49,7 @@ for recognizer_name, _ in recognizer_dict.items():
             #attack failed with given epsilon value, so delete old image and increase epsilon
             os.remove(noisy_image_labels.img_path)
             epsilon += epsilon_delta
-            noisy_image_labels = attacks.draw_and_return_noisy_image_labels(img_path, epsilon, output_dir).add_all_labels(truth_file, recognizer_dict)
+            attacked_img_path = attacks.create_noisy_image(img_path, epsilon, output_dir)
+            noisy_image_labels = imagelabels.ImageLabels(attacked_img_path).add_all_labels(truth_file, recognizer_dict)
         else: print('Noise attack failed'); fail_count += 1
 print('Failed to beat ' + str(fail_count) + ' images with max epsilon: ' + str(max_epsilon_value))
