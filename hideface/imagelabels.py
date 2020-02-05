@@ -11,6 +11,7 @@ class ImageLabels:
 
     Attributes:
         img_path: the path to the image
+        img_shape: a tuple giving the image shape (height,width,channels)
         true_box_list: a list of ground truth FaceBox objects
         found_box_dict: a dictionary of recognizer names and found box lists prior to attack 
         **kwargs: arguments for describing the attack applied (ex: noise_epsilon)
@@ -24,6 +25,9 @@ class ImageLabels:
     """
     def __init__(self, img_path, true_box_list=[], found_box_dict={}, **kwargs):
         self.img_path = img_path
+        if (not os.path.isfile(self.img_path)): sys.exit('Attempting to create ImageLabels object for bad image path: ' + str(self.img_path))
+        image = io.imread(self.img_path)
+        self.img_shape = image.shape
         self.true_box_list = true_box_list
         self.found_box_dict = found_box_dict
         self.__dict__.update(kwargs)
