@@ -89,21 +89,21 @@ class FaceBoxMatch:
         if self.__class__ != other.__class__: return False
         return self.__dict__ == other.__dict__
 
-def get_found_boxes(img_path, recognizer, upsample=1):
+def get_found_boxes(img_path, detector, upsample=1):
     """
-    Get a list of FaceBox objects found by a given recognizer
+    Get a list of FaceBox objects found by a given detector
 
     Args:
        img_path: the path to the image of interest 
-       recognizer: the face recognizer you want to use
+       detector: the face detector you want to use
        upsample: optional upsampling value
     Returns:
        found_box_list: list of FaceBox objects found in the image   
     """
     image = io.imread(img_path)
-    try: found_faces = recognizer(image, upsample)
+    try: found_faces = detector(image, upsample)
     except:
-        sys.exit('get_found_boxes recognizer object failed to find boxes -- do you have the method defined properly?')
+        sys.exit('get_found_boxes detector object failed to find boxes -- do you have the method defined properly?')
     found_box_list = []
     for face in found_faces:
         width = face.right()-face.left()
