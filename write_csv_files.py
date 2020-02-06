@@ -17,7 +17,8 @@ if (num_imgs < len(os.listdir(img_input_dir))):
     img_paths = random.sample([img_input_dir+img_name for img_name in os.listdir(img_input_dir)],num_imgs) 
 else: 
     img_paths = [img_input_dir+img_name for img_name in os.listdir(img_input_dir)] 
-output_dir = 'data/51_multnoise'
+output_dir = 'data/51_addnoise'
+use_mult_noise = False
 epsilon_start_value = 16
 max_epsilon_value = 240
 epsilon_delta = 16
@@ -52,7 +53,7 @@ for detector_name, _ in detector_dict.items():
 
         epsilon = epsilon_start_value
         while (epsilon < max_epsilon_value):
-            attacked_img_path,noise_img_path = attacks.create_noisy_image(img_path, epsilon, output_dir, use_mult_noise=True)
+            attacked_img_path,noise_img_path = attacks.create_noisy_image(img_path, epsilon, output_dir, use_mult_noise=use_mult_noise)
             noisy_image_labels = imagelabels.ImageLabels(attacked_img_path).add_detector_labels(detector_dict)
             truth_iou_noise = 0 if (len(noisy_image_labels.found_box_dict[detector_name]) == 0) else image_labels.true_box_list[0].iou(noisy_image_labels.found_box_dict[detector_name][0])
             if (len(noisy_image_labels.found_box_dict[detector_name]) == 0):
@@ -60,24 +61,24 @@ for detector_name, _ in detector_dict.items():
                 #noisy_image_labels.draw_images(output_dir,'noisy_eps'+str(epsilon))
                 image_labels.draw_images(output_dir)
                 tunnel_dict['successful_attack_no_faces_count'] += 1
-                performance_list.append({'img_num':img_num,'epsilon':epsilon,'img_shape':list(image_labels.img_shape),  
-                    'true_box_shape':[image_labels.true_box_list[0].height,image_labels.true_box_list[0].width],'truth_iou_no_noise':truth_iou_no_noise,'truth_iou_noise':truth_iou_noise})
+                performance_list.append({'img_num':img_num,'epsilon':epsilon,'img_size':image_labels.img_shape[0]*image_labels.img_shape[1],      
+                    'true_box_size':image_labels.true_box_list[0].height*image_labels.true_box_list[0].width,'truth_iou_no_noise':truth_iou_no_noise,'truth_iou_noise':truth_iou_noise}) 
                 break
             if (len(noisy_image_labels.found_box_dict[detector_name]) == 1 and truth_iou_noise < iou_cutoff_value):
                     print('Truth-Found IoU < '+str(iou_cutoff_value)+' with epsilon: ' + str(epsilon))
                     #noisy_image_labels.draw_images(output_dir,'noisy_eps'+str(epsilon))
                     image_labels.draw_images(output_dir)
                     tunnel_dict['successful_attack_small_iou_count'] += 1
-                    performance_list.append({'img_num':img_num,'epsilon':epsilon,'img_shape':list(image_labels.img_shape), 
-                        'true_box_shape':[image_labels.true_box_list[0].height,image_labels.true_box_list[0].width],'truth_iou_no_noise':truth_iou_no_noise,'truth_iou_noise':truth_iou_noise}) 
+                    performance_list.append({'img_num':img_num,'epsilon':epsilon,'img_size':image_labels.img_shape[0]*image_labels.img_shape[1], 
+                        'true_box_size':image_labels.true_box_list[0].height*image_labels.true_box_list[0].width,'truth_iou_no_noise':truth_iou_no_noise,'truth_iou_noise':truth_iou_noise}) 
                     break
             #if attack failed with given epsilon value, delete old image and increase epsilon
             os.remove(noisy_image_labels.img_path)
             os.remove(noise_img_path)
             epsilon += epsilon_delta
         else: 
-            performance_list.append({'img_num':img_num,'epsilon':-1,'img_shape':list(image_labels.img_shape),
-                        'true_box_shape':[image_labels.true_box_list[0].height,image_labels.true_box_list[0].width],'truth_iou_no_noise':truth_iou_no_noise,'truth_iou_noise':-1})
+            performance_list.append({'img_num':img_num,'epsilon':-1,'img_size':image_labels.img_shape[0]*image_labels.img_shape[1],
+                        'true_box_size':image_labels.true_box_list[0].height*image_labels.true_box_list[0].width,'truth_iou_no_noise':truth_iou_no_noise,'truth_iou_noise':-1})
             print('Noise attack failed'); tunnel_dict['fail_count'] += 1
 print(performance_list)
 with open(output_dir + '/' + performance_list_csv, 'w', encoding='utf8', newline='') as output_file:
