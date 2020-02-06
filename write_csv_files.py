@@ -48,8 +48,9 @@ for detector_name, _ in detector_dict.items():
             print('True Face Quality too poor (' + str(image_labels.true_box_list[0].quality) + '), skipping'); tunnel_dict['bad_quality_count'] += 1; continue
         if (len(image_labels.found_box_dict[detector_name]) == 0): 
             print('Could not find face prior to noise application, skipping'); tunnel_dict['no_found_faces_count'] += 1; continue
-
         truth_iou_no_noise = image_labels.true_box_list[0].iou(image_labels.found_box_dict[detector_name][0])
+        if (truth_iou_no_noise < iou_cutoff_value):
+            print('Found a face, but match to truth poor (IoU < ' + str(iou_cutoff_value)); tunnel_dict['no_found_faces_count'] += 1; continue
 
         epsilon = epsilon_start_value
         while (epsilon < max_epsilon_value):
