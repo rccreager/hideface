@@ -1,8 +1,10 @@
 import re
 import os
 import sys
+import copy
 import numpy as np
 from skimage import io,util
+from PIL import Image
 from hideface import tools, imagelabels
 
 def create_noisy_image(original_img_path, noise_epsilon, output_dir, use_mult_noise=False):
@@ -20,8 +22,14 @@ def create_noisy_image(original_img_path, noise_epsilon, output_dir, use_mult_no
     """
     if (not os.path.isfile(original_img_path)): sys.exit('Bad input image path: ' + original_img_path)
     if (not os.path.exists(output_dir)): os.makedirs(output_dir)
-    image = io.imread(original_img_path)
-    pixels = np.copy(np.asarray(image).astype(np.float32))
+    try:
+        image = Image.open(original_img_path).convert("RGB")
+        image.verify() # verify that it is, in fact an image
+    except (IOError, SyntaxError) as e:
+        print('Input Image Read Error (create_noisy_image): ' + original_img_path)
+        return '',''
+    image = copy.deepcopy(np.array(image))
+    pixels = np.asarray(image).astype(np.float32)
     pixels /= 255.0
     noise = (noise_epsilon/255.0) * np.random.normal(loc=0.0, scale=1.0, size=pixels.shape)
     image_pixels = pixels * (1.0 + noise) if (use_mult_noise) else pixels + noise

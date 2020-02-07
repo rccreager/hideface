@@ -3,6 +3,8 @@ import os
 import sys
 import copy
 from skimage import io
+from PIL import Image
+import numpy as np
 from hideface import tools
 
 class ImageLabels:
@@ -25,8 +27,18 @@ class ImageLabels:
     """
     def __init__(self, img_path, true_box_list=[], found_box_dict={}, **kwargs):
         self.img_path = img_path
-        if (not os.path.isfile(self.img_path)): sys.exit('Attempting to create ImageLabels object for bad image path: ' + str(self.img_path))
-        image = io.imread(self.img_path)
+        if (not os.path.isfile(self.img_path)): 
+            print('Attempting to create ImageLabels object for bad image path: ' + str(self.img_path))
+            raise IOError
+        try:
+            image = Image.open(img_path)
+            image = image.convert("RGB")
+            image.verify() # verify that it is, in fact an image
+        except:
+            print('Input Image Read Error (ImageLabels init): ' + img_path)  
+            raise
+            #raise ValueError 
+        image = np.array(image)
         self.img_shape = image.shape
         self.true_box_list = true_box_list
         self.found_box_dict = found_box_dict
@@ -94,7 +106,12 @@ class ImageLabels:
         """
         file_num = re.findall(r'[0-9]+_[0-9]+\.jpg', self.img_path)[0][:-4]
         if (not os.path.exists(output_dir)): os.makedirs(output_dir)
-        image = io.imread(self.img_path)
+        try:
+            image = Image.open(self.img_path).convert("RGB")
+            image.verify() # verify that it is, in fact an image
+        except (IOError, SyntaxError) as e: 
+            print('Input Image Read Error (draw_images): ' + self.img_path)   
+        image = copy.deepcopy(np.array(image))
         tools.draw_boxes(image,self.true_box_list, (0,0,255))
         if (len(self.found_box_dict) == 0):
             holder_str = 'no_detector'

@@ -2,6 +2,8 @@ import re
 import os
 import sys
 from skimage import io
+import numpy as np
+from PIL import Image
 from skimage.draw import polygon_perimeter
 
 class TruthBoxQuality:
@@ -100,7 +102,13 @@ def get_found_boxes(img_path, detector, upsample=1):
     Returns:
        found_box_list: list of FaceBox objects found in the image   
     """
-    image = io.imread(img_path)
+    
+    try:
+        image = Image.open(img_path).convert("RGB")
+        image.verify() # verify that it is, in fact an image
+    except (IOError, SyntaxError) as e: 
+        print('Input Image Read Error (get_found_boxes): ' + img_path)   
+    image = np.array(image)
     try: found_faces = detector(image, upsample)
     except:
         sys.exit('get_found_boxes detector object failed to find boxes -- do you have the method defined properly?')
