@@ -77,11 +77,6 @@ def test_paths(attack_record_filename, result_counter_filename, output_dir):
         user_input = input('Output directory not empty: ' + output_dir + '\nProceed? [y/N]')
         if (user_input != 'y'): sys.exit('Exiting')
 
-def quality_error(error_text, counter_name, tunnel_dict):
-    #print(error_text)
-    tunnel_dict[counter_name] += 1
-    raise ValueError(error_text)
-
 def test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dict, output_dir):
     """
     Run some quality tests and checks on an input image and draw the image with true and found face boxes
@@ -97,6 +92,10 @@ def test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dic
         image_labels: an ImageLabels object with truth and found boxes already calculated
         truth_iou_no_noise: the IoU between the found face and truth face before applying any noise
     """
+    def quality_error(error_text, counter_name, tunnel_dict):
+        tunnel_dict[counter_name] += 1
+        raise ValueError(error_text)
+    
     try: 
         image_labels = imagelabels.ImageLabels(img_path)
     except IOError: 
