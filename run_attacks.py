@@ -137,7 +137,16 @@ if __name__ == "__main__":
     epsilon_delta = 16
     iou_cutoff_value = 0.2
     performance_list = []
-    tunnel_dict = {'total_img_count':0,'bad_image':0,'multiple_faces_count':0, 'zero_faces_count':0, 'bad_quality_count':0, 'no_found_faces_count':0, 'fail_count':0,'successful_attack':0}
+    #a dictionary for storing the counts of how often each type of image error/result occurs
+    tunnel_dict = {
+        'total_img_count':0,
+        'bad_image':0,
+        'multiple_faces_count':0, 
+        'zero_faces_count':0, 
+        'bad_quality_count':0, 
+        'no_found_faces_count':0, 
+        'fail_count':0,
+        'successful_attack':0}
     
     test_paths(attack_record_filename, result_counter_filename, output_dir)
     
@@ -155,13 +164,14 @@ if __name__ == "__main__":
                 print(e)
                 continue
 
-            performance_dict = {'img_num':img_num,
-                                'epsilon':-1,
-                                'img_size':image_labels.img_shape[0]*image_labels.img_shape[1],
-                                'true_box_size':image_labels.true_box_list[0].height*image_labels.true_box_list[0].width,
-                                'truth_iou_no_noise':truth_iou_no_noise,
-                                'truth_iou_noise':-1,
-                                'ssim':-1}
+            performance_dict = {
+                'img_num':img_num,
+                'epsilon':-1,
+                'img_size':image_labels.img_shape[0]*image_labels.img_shape[1],
+                'true_box_size':image_labels.true_box_list[0].height*image_labels.true_box_list[0].width,
+                'truth_iou_no_noise':truth_iou_no_noise,
+                'truth_iou_noise':-1,
+                'ssim':-1}
             epsilon = epsilon_start_value
             while (epsilon < max_epsilon_value):
                 attacked_img_path, noise_img_path = attacks.create_noisy_image(img_path, epsilon, output_dir, use_mult_noise=use_mult_noise)
