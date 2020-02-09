@@ -99,8 +99,10 @@ def test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dic
     except: 
         print('Problem during initialization of ImageLabels (probably a corrupted image): ' + str(img_path)); tunnel_dict['bad_image'] += 1; raise ValueError
     image_labels.add_all_labels(truth_file, detector_dict)
-    if (len(image_labels.true_box_list) > 1): print('Found >1 true faces, skipping'); tunnel_dict['multiple_faces_count'] += 1; raise ValueError
-    if (len(image_labels.true_box_list) == 0): print('Found 0 true faces, skipping'); tunnel_dict['zero_faces_count'] += 1; raise ValueError
+    if (len(image_labels.true_box_list) > 1): 
+        print('Found >1 true faces, skipping'); tunnel_dict['multiple_faces_count'] += 1; raise ValueError
+    if (len(image_labels.true_box_list) == 0): 
+        print('Found 0 true faces, skipping'); tunnel_dict['zero_faces_count'] += 1; raise ValueError
     if (image_labels.true_box_list[0].quality != tools.TruthBoxQuality(0,0,0,0,0,0)):
         print('True Face Quality too poor (' + str(image_labels.true_box_list[0].quality) + '), skipping'); tunnel_dict['bad_quality_count'] += 1; raise ValueError
     if (len(image_labels.found_box_dict[detector_name]) == 0):
@@ -153,8 +155,10 @@ if __name__ == "__main__":
                 #if you find no faces or the truth-found face IoU is small, the attack has succeeded
                 if (len(noisy_image_labels.found_box_dict[detector_name]) == 0 
                         or (len(noisy_image_labels.found_box_dict[detector_name]) == 1 and truth_iou_noise < iou_cutoff_value)):
-                    if (len(noisy_image_labels.found_box_dict[detector_name]) == 0): print('No boxes found with epsilon: ' + str(epsilon))
-                    if (len(noisy_image_labels.found_box_dict[detector_name]) == 1 and truth_iou_noise < iou_cutoff_value): print('Truth-Found IoU < '+str(iou_cutoff_value)+' with epsilon: ' + str(epsilon))
+                    if (len(noisy_image_labels.found_box_dict[detector_name]) == 0): 
+                        print('No boxes found with epsilon: ' + str(epsilon))
+                    if (len(noisy_image_labels.found_box_dict[detector_name]) == 1 and truth_iou_noise < iou_cutoff_value): 
+                        print('Truth-Found IoU < '+str(iou_cutoff_value)+' with epsilon: ' + str(epsilon))
                     tunnel_dict['successful_attack'] += 1
                     performance_list.append({'img_num':img_num,'epsilon':epsilon,'img_size':image_labels.img_shape[0]*image_labels.img_shape[1],      
                         'true_box_size':image_labels.true_box_list[0].height*image_labels.true_box_list[0].width,'truth_iou_no_noise':truth_iou_no_noise,'truth_iou_noise':truth_iou_noise,'ssim':ssim_val}) 
