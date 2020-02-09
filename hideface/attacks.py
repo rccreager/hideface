@@ -28,7 +28,8 @@ def create_noisy_image(original_img_path, noise_epsilon, output_dir, use_mult_no
         image = Image.open(original_img_path).convert("RGB")
         image.verify() # verify that it is, in fact an image
     except (IOError,SyntaxError) as e:
-        raise ValueError('Input Image Read Error (create_noisy_image): ' + original_img_path) 
+        raise ValueError('Input Image Read Error (create_noisy_image): ' 
+            + original_img_path + ': ' + str(e)) 
     image = copy.deepcopy(np.array(image))
     pixels = np.asarray(image).astype(np.float32)
     pixels /= 255.0
