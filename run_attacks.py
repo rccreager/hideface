@@ -22,7 +22,11 @@ def get_ssim(image_labels, attacked_image_labels):
     """
     img = io.imread(image_labels.img_path)
     attack_img = io.imread(attacked_image_labels.img_path)
-    ssim_val = ssim(img, attack_img, data_range=attack_img.max() - attack_img.min(), multichannel=True)
+    ssim_val = ssim(
+            img, 
+            attack_img, 
+            data_range = attack_img.max() - attack_img.min(), 
+            multichannel=True)
     return ssim_val
 
 def write_csv(rows, output_filename, output_dir):
@@ -35,7 +39,8 @@ def write_csv(rows, output_filename, output_dir):
         output_dir: the path to the directory to write the output file
     """
     if (len(rows) != 0):
-        with open(os.path.join(output_dir, output_filename), 'w', encoding='utf8', newline='') as output_file:
+        file_path = os.path.join(output_dir, output_filename)
+        with open(file_path, 'w', encoding='utf8', newline='') as output_file:
             if (isinstance(rows, dict)): rows = [rows]
             fc = csv.DictWriter(output_file,fieldnames=rows[0].keys())
             fc.writeheader()
@@ -69,8 +74,8 @@ def test_paths(attack_record_filename, result_counter_filename, output_dir):
     Check whether the provided output filenames and directory exist and are empty
 
     Args:
-        attack_record_filename: path to desired output file for writing CSV record of image attacks
-        result_counter_filename: path to desired output file for writing CSV record of results counters
+        attack_record_filename: path for output file for writing CSV record of image attacks
+        result_counter_filename: path for output file for writing CSV record of results counters
         output_dir: the directory for writing all output images and CSV files
     """
     if (os.path.exists(attack_record_filename)): 
@@ -83,7 +88,7 @@ def test_paths(attack_record_filename, result_counter_filename, output_dir):
 
 def test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dict, output_dir):
     """
-    Run some quality tests and checks on an input image and draw the image with true and found face boxes
+    Run quality tests/checks on an input image and draw the image with true and found face boxes
 
     Args:
         img_path: the full path to the desired input image
@@ -103,9 +108,10 @@ def test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dic
     try: 
         image_labels = imagelabels.ImageLabels(img_path)
     except IOError: 
-        quality_error('File Path does not exist or cannot be found: ' + str(img_path), 'bad_image', tunnel_dict)
+        error_str = 'File Path does not exist or cannot be found: ' + str(img_path)
+        quality_error(error_str, 'bad_image', tunnel_dict)
     except: 
-        error_str = 'Problem during initialization of ImageLabels (probably a corrupted image): ' + str(img_path)
+        error_str = 'Problem during init of ImageLabels (corrupted image?): ' + str(img_path)
         quality_error(error_str, 'bad_image', tunnel_dict)
     image_labels.add_all_labels(truth_file, detector_dict)
     if (len(image_labels.true_box_list) > 1): 
@@ -113,11 +119,14 @@ def test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dic
     if (len(image_labels.true_box_list) == 0): 
         quality_error('Found 0 true faces, skipping','zero_faces_count',tunnel_dict)
     if (image_labels.true_box_list[0].quality != tools.TruthBoxQuality(0,0,0,0,0,0)):
-        error_str = 'True Face Quality too poor (' + str(image_labels.true_box_list[0].quality) + '), skipping'
+        error_str = ('True Face Quality too poor (' 
+                + str(image_labels.true_box_list[0].quality) + '), skipping')
         quality_error(error_str, 'bad_quality_count', tunnel_dict)
     if (len(image_labels.found_box_dict[detector_name]) == 0):
-        quality_error('Could not find face prior to noise application, skipping','no_found_faces_count',tunnel_dict)
-    truth_iou_no_noise = image_labels.true_box_list[0].iou(image_labels.found_box_dict[detector_name][0])
+        error_str = 'Could not find face prior to noise application, skipping'
+        quality_error(error_str,'no_found_faces_count',tunnel_dict)
+    true_box = image_labels.true_box_list[0]
+    truth_iou_no_noise = true_box.iou(image_labels.found_box_dict[detector_name][0])
     if (truth_iou_no_noise < iou_cutoff_value):
         error_str = 'Found a face, but match to truth poor (IoU < ' + str(iou_cutoff_value)
         quality_error(error_str, 'no_found_faces_count', tunnel_dict)
@@ -164,16 +173,24 @@ if __name__ == "__main__":
             print('Testing Image: ' + img_num + '\t(' + str(count) + '/' + str(num_imgs) + ')')
             
             try: 
-                image_labels, truth_iou_no_noise = test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dict, output_dir)
+                image_labels, truth_iou_no_noise = test_image(
+                    img_path, 
+                    truth_file, 
+                    detector_dict, 
+                    iou_cutoff_value, 
+                    tunnel_dict, 
+                    output_dir)
             except ValueError as e: 
                 print(e)
                 continue
 
+            box_height = image_labels.true_box_list[0].height
+            box_width = image_labels.true_box_list[0].width
             performance_dict = {
                 'img_num':img_num,
                 'epsilon':-1,
                 'img_size':image_labels.img_shape[0]*image_labels.img_shape[1],
-                'true_box_size':image_labels.true_box_list[0].height*image_labels.true_box_list[0].width,
+                'true_box_size':box_height * box_width,
                 'truth_iou_no_noise':truth_iou_no_noise,
                 'truth_iou_noise':-1,
                 'ssim':-1}
@@ -184,22 +201,28 @@ if __name__ == "__main__":
                     epsilon, 
                     output_dir, 
                     use_mult_noise=use_mult_noise)
-                noisy_image_labels = imagelabels.ImageLabels(attacked_img_path).add_detector_labels(detector_dict)
+                noisy_image_labels = imagelabels.ImageLabels(attacked_img_path)
+                noisy_image_labels = noisy_image_labels.add_detector_labels(detector_dict)
                 if (len(noisy_image_labels.found_box_dict[detector_name]) == 0):
                     truth_iou_noise = 0
                 else:
-                    truth_iou_noise = image_labels.true_box_list[0].iou(noisy_image_labels.found_box_dict[detector_name][0])
+                    true_box = image_labels.true_box_list[0]
+                    found_box = noisy_image_labels.found_box_dict[detector_name][0]
+                    truth_iou_noise = true_box.iou(found_box)
                 ssim_val = get_ssim(image_labels, noisy_image_labels) 
                 performance_dict['epsilon'] = epsilon
                 performance_dict['truth_iou_noise'] = truth_iou_noise
                 performance_dict['ssim'] = ssim_val
                 #if you find no faces or the truth-found face IoU is small, the attack has succeeded
                 if (len(noisy_image_labels.found_box_dict[detector_name]) == 0 
-                        or (len(noisy_image_labels.found_box_dict[detector_name]) == 1 and truth_iou_noise < iou_cutoff_value)):
+                        or (len(noisy_image_labels.found_box_dict[detector_name]) == 1 
+                            and truth_iou_noise < iou_cutoff_value)):
                     if (len(noisy_image_labels.found_box_dict[detector_name]) == 0): 
                         print('No boxes found with epsilon: ' + str(epsilon))
-                    if (len(noisy_image_labels.found_box_dict[detector_name]) == 1 and truth_iou_noise < iou_cutoff_value): 
-                        print('Truth-Found IoU < '+str(iou_cutoff_value)+' with epsilon: ' + str(epsilon))
+                    if (len(noisy_image_labels.found_box_dict[detector_name]) == 1 
+                            and truth_iou_noise < iou_cutoff_value): 
+                        print('Truth-Found IoU < ' 
+                                + str(iou_cutoff_value) + ' with epsilon: ' + str(epsilon))
                     tunnel_dict['successful_attack'] += 1
                     break
                 #if attack failed with given epsilon value, delete old image and increase epsilon
