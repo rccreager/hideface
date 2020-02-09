@@ -196,11 +196,15 @@ if __name__ == "__main__":
                 'ssim':-1}
             epsilon = epsilon_start_value
             while (epsilon < max_epsilon_value):
-                attacked_img_path, noise_img_path = attacks.create_noisy_image(
-                    img_path, 
-                    epsilon, 
-                    output_dir, 
-                    use_mult_noise=use_mult_noise)
+                try:
+                    attacked_img_path, noise_img_path = attacks.create_noisy_image(
+                        img_path, 
+                        epsilon, 
+                        output_dir, 
+                        use_mult_noise=use_mult_noise)
+                except ValueError as e: 
+                    print(e)
+                    continue
                 noisy_image_labels = imagelabels.ImageLabels(attacked_img_path)
                 noisy_image_labels = noisy_image_labels.add_detector_labels(detector_dict)
                 if (len(noisy_image_labels.found_box_dict[detector_name]) == 0):
