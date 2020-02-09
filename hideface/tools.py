@@ -25,13 +25,23 @@ class TruthBoxQuality:
         self.invalid = int(invalid)
         self.occlusion = int(occlusion)
         self.pose = int(pose)
+    
     def __str__(self):
-        return "(Blur: {} Expression: {} Illumination: {} Invalid: {} Occlusion: {} Pose: {})".format(self.blur, self.expression, self.illumination, self.invalid, self.occlusion, self.pose)
+        return "(Blur: {} Expression: {} Illum: {} Invalid: {} Occlusion: {} Pose: {})".format(
+            self.blur, 
+            self.expression, 
+            self.illumination, 
+            self.invalid, 
+            self.occlusion, 
+            self.pose)
+    
     def __repr__(self):
         return str(self)
+    
     def __eq__(self, other):
         if self.__class__ != other.__class__: return False
         return self.__dict__ == other.__dict__
+
 
 class FaceBox:
     """
@@ -54,16 +64,25 @@ class FaceBox:
         self.width = int(width)
         self.height = int(height)
         self.quality = quality
+    
     def __str__(self):
-        return "(x1:{} y1:{} Width:{} Height:{} Quality: {})".format(self.x1, self.y1, self.width, self.height, self.quality) 
+        return "(x1:{} y1:{} Width:{} Height:{} Quality: {})".format(
+            self.x1, 
+            self.y1, 
+            self.width, 
+            self.height, 
+            self.quality) 
     def __repr__(self):
         return str(self)
+    
     def __eq__(self, other):
         if self.__class__ != other.__class__: return False
         return self.__dict__ == other.__dict__
+    
     def area(self):
         """Area of FaceBox as a float"""
         return float(self.width*self.height)
+    
     def iou(self, box):
         """Intersection over union of two FaceBox objects as a float"""
         if (self.width == 0 or self.height == 0 or box.width == 0 or box.height == 0): return 0
@@ -71,6 +90,7 @@ class FaceBox:
                 max(0,min(self.x1+self.width,box.x1+box.width)-max(0,self.x1,box.x1)), 
                 max(0,min(self.y1+self.height,box.y1+box.height)-max(0,self.y1,box.y1))  )
         return max(0,intersect.area() / (self.area() + box.area() - intersect.area()))
+
 
 class FaceBoxMatch:
     """
@@ -83,13 +103,20 @@ class FaceBoxMatch:
     def __init__(self, target_box=FaceBox(), match_box=FaceBox()):
         self.target_box = target_box
         self.match_box = match_box
+    
     def __str__(self):
-        return "(Target Box:{} Match Box:{} IoU:{})".format(self.target_box, self.match_box, self.target_box.iou(self.match_box))
+        return "(Target Box:{} Match Box:{} IoU:{})".format(
+            self.target_box, 
+            self.match_box, 
+            self.target_box.iou(self.match_box))
+    
     def __repr__(self):
         return str(self)
+    
     def __eq__(self, other):
         if self.__class__ != other.__class__: return False
         return self.__dict__ == other.__dict__
+
 
 def get_found_boxes(img_path, detector, upsample=1):
     """
@@ -102,7 +129,6 @@ def get_found_boxes(img_path, detector, upsample=1):
     Returns:
        found_box_list: list of FaceBox objects found in the image   
     """
-    
     try:
         image = Image.open(img_path).convert("RGB")
         image.verify() # verify that it is, in fact an image
@@ -111,7 +137,9 @@ def get_found_boxes(img_path, detector, upsample=1):
     image = np.array(image)
     try: found_faces = detector(image, upsample)
     except:
-        sys.exit('get_found_boxes detector object failed to find boxes -- do you have the method defined properly?')
+        error_str = ('get_found_boxes detector object failed to find boxes' 
+            ' -- do you have the method defined properly?')
+        sys.exit(error_str)
     found_box_list = []
     for face in found_faces:
         width = face.right()-face.left()
@@ -120,6 +148,7 @@ def get_found_boxes(img_path, detector, upsample=1):
         if (face.bottom() > image.shape[0]): height = image.shape[0] - face.bottom()
         found_box_list.append(FaceBox(face.left(), face.top(), width, height))
     return found_box_list
+
 
 def get_ground_truth_boxes(img_num, truth_file):
     """
@@ -140,12 +169,26 @@ def get_ground_truth_boxes(img_num, truth_file):
             if (img_num+'.jpg') in line:
                 num_faces = int(lines[i+1])
                 for j in range(2,num_faces+2):
-                    box_vals = re.findall(r"^[0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-2] [0,1] [0,1] [0,1] [0-2] [0,1]", lines[i+j])[0].split()
+                    regex_str = r"^[0-9]+ [0-9]+ [0-9]+ [0-9]+ [0-2] [0,1] [0,1] [0,1] [0-2] [0,1]"
+                    box_vals = re.findall(regex_str, lines[i+j])[0].split()
                     #make sure to skip invalid truth boxes
                     if (box_vals[7] == 1): next
-                    box = FaceBox(box_vals[0], box_vals[1], box_vals[2], box_vals[3], TruthBoxQuality(box_vals[4], box_vals[5], box_vals[6], box_vals[7], box_vals[8], box_vals[9]))
+                    truth_box_quality = TruthBoxQuality(
+                        box_vals[4], 
+                        box_vals[5], 
+                        box_vals[6], 
+                        box_vals[7], 
+                        box_vals[8], 
+                        box_vals[9])
+                    box = FaceBox(
+                        box_vals[0], 
+                        box_vals[1], 
+                        box_vals[2], 
+                        box_vals[3], 
+                        truth_box_quality)    
                     box_list.append(box)
     return box_list                   
+
 
 def draw_boxes(image, box_list, color_rgb):
     """
@@ -164,6 +207,7 @@ def draw_boxes(image, box_list, color_rgb):
         rr,cc = polygon_perimeter([box.y1, box.y1, bottom_edge, bottom_edge],
                                  [box.x1, right_edge, right_edge, box.x1])
         image[rr, cc] = color_rgb
+
 
 def get_matches(target_box_list, potential_match_box_list):
     """
@@ -185,4 +229,3 @@ def get_matches(target_box_list, potential_match_box_list):
             if (new_iou > old_iou):
                 box_pair.match_box = potential_match_box
     return best_matches
-

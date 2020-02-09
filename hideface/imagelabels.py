@@ -25,7 +25,6 @@ class ImageLabels:
         draw_images: drawn image(s) with available boxes and set drawn_images attribute
         delete_drawn_images: delete all images in drawn_images list and set list to empty
     """
-    
     def __init__(self, img_path, true_box_list=[], found_box_dict={}, **kwargs):
         self.img_path = img_path
         if (not os.path.isfile(self.img_path)): 

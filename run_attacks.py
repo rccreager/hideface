@@ -105,6 +105,7 @@ def test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dic
         image_labels: an ImageLabels object with truth and found boxes already calculated
         truth_iou_no_noise: the IoU between the found face and truth face before applying any noise
     """
+    
     def quality_error(error_text, counter_name, tunnel_dict):
         tunnel_dict[counter_name] += 1
         raise ValueError(error_text)

@@ -7,9 +7,10 @@ from skimage import io,util
 from PIL import Image
 from hideface import tools, imagelabels
 
+
 def create_noisy_image(original_img_path, noise_epsilon, output_dir, use_mult_noise=False):
     """
-    Given a path to an image, this function creates a new image with normally-distributed noise randomly applied
+    Given a path to an image, create a new image with normally-distributed noise randomly applied
 
     Args:
         original_img_path: the path of the image you want to attack
@@ -20,7 +21,8 @@ def create_noisy_image(original_img_path, noise_epsilon, output_dir, use_mult_no
         image_file_path: the path to the output image you just created 
         noise_file_path: the path to the noise image you created
     """
-    if (not os.path.isfile(original_img_path)): sys.exit('Bad input image path: ' + original_img_path)
+    if (not os.path.isfile(original_img_path)): 
+        sys.exit('Bad input image path: ' + original_img_path)
     if (not os.path.exists(output_dir)): os.makedirs(output_dir)
     try:
         image = Image.open(original_img_path).convert("RGB")
