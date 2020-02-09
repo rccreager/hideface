@@ -154,15 +154,22 @@ if __name__ == "__main__":
             except ValueError as e: 
                 print(e)
                 continue
-   
 
-            performance_dict = {'img_num':img_num,'epsilon':-1,'img_size':image_labels.img_shape[0]*image_labels.img_shape[1],
-                'true_box_size':image_labels.true_box_list[0].height*image_labels.true_box_list[0].width,'truth_iou_no_noise':truth_iou_no_noise,'truth_iou_noise':-1,'ssim':-1}
+            performance_dict = {'img_num':img_num,
+                                'epsilon':-1,
+                                'img_size':image_labels.img_shape[0]*image_labels.img_shape[1],
+                                'true_box_size':image_labels.true_box_list[0].height*image_labels.true_box_list[0].width,
+                                'truth_iou_no_noise':truth_iou_no_noise,
+                                'truth_iou_noise':-1,
+                                'ssim':-1}
             epsilon = epsilon_start_value
             while (epsilon < max_epsilon_value):
                 attacked_img_path, noise_img_path = attacks.create_noisy_image(img_path, epsilon, output_dir, use_mult_noise=use_mult_noise)
                 noisy_image_labels = imagelabels.ImageLabels(attacked_img_path).add_detector_labels(detector_dict)
-                truth_iou_noise = 0 if (len(noisy_image_labels.found_box_dict[detector_name]) == 0) else image_labels.true_box_list[0].iou(noisy_image_labels.found_box_dict[detector_name][0])
+                if (len(noisy_image_labels.found_box_dict[detector_name]) == 0):
+                    truth_iou_noise = 0
+                else:
+                    truth_iou_noise = image_labels.true_box_list[0].iou(noisy_image_labels.found_box_dict[detector_name][0])
                 ssim_val = get_ssim(image_labels, noisy_image_labels) 
                 performance_dict['epsilon'] = epsilon
                 performance_dict['truth_iou_noise'] = truth_iou_noise
