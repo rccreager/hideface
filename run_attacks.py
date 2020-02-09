@@ -40,7 +40,9 @@ def write_csv(rows, output_filename, output_dir):
             fc = csv.DictWriter(output_file,fieldnames=rows[0].keys())
             fc.writeheader()
             fc.writerows(rows)
-    else: print('write_csv \'rows\' argument has no entries; cannot write CSV file: ' + str(os.path.join(output_dir, attack_record_filename)))
+    else: 
+        print('write_csv \'rows\' argument has no entries; cannot write CSV file: ' 
+            + str(os.path.join(output_dir, attack_record_filename)))
 
 def get_img_paths(img_input_dir, num_imgs):
     """
@@ -68,11 +70,13 @@ def test_paths(attack_record_filename, result_counter_filename, output_dir):
 
     Args:
         attack_record_filename: path to desired output file for writing CSV record of image attacks
-        result_counter_filename: path to desired output file for writing CSV record of results of quality checks and attack
+        result_counter_filename: path to desired output file for writing CSV record of results counters
         output_dir: the directory for writing all output images and CSV files
     """
-    if (os.path.exists(attack_record_filename)): sys.exit('Output file ' + attack_record_filename + ' already exists, exiting')
-    if (os.path.exists(result_counter_filename)): sys.exit('Output file ' + result_counter_filename + ' already exists, exiting')
+    if (os.path.exists(attack_record_filename)): 
+        sys.exit('Output file ' + attack_record_filename + ' already exists, exiting')
+    if (os.path.exists(result_counter_filename)): 
+        sys.exit('Output file ' + result_counter_filename + ' already exists, exiting')
     if (os.path.exists(output_dir) and len(os.listdir(output_dir)) != 0):
         user_input = input('Output directory not empty: ' + output_dir + '\nProceed? [y/N]')
         if (user_input != 'y'): sys.exit('Exiting')
@@ -159,7 +163,8 @@ if __name__ == "__main__":
             if (count > num_imgs): break
             print('Testing Image: ' + img_num + '\t(' + str(count) + '/' + str(num_imgs) + ')')
             
-            try: image_labels, truth_iou_no_noise = test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dict, output_dir)
+            try: 
+                image_labels, truth_iou_no_noise = test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dict, output_dir)
             except ValueError as e: 
                 print(e)
                 continue
@@ -174,7 +179,11 @@ if __name__ == "__main__":
                 'ssim':-1}
             epsilon = epsilon_start_value
             while (epsilon < max_epsilon_value):
-                attacked_img_path, noise_img_path = attacks.create_noisy_image(img_path, epsilon, output_dir, use_mult_noise=use_mult_noise)
+                attacked_img_path, noise_img_path = attacks.create_noisy_image(
+                    img_path, 
+                    epsilon, 
+                    output_dir, 
+                    use_mult_noise=use_mult_noise)
                 noisy_image_labels = imagelabels.ImageLabels(attacked_img_path).add_detector_labels(detector_dict)
                 if (len(noisy_image_labels.found_box_dict[detector_name]) == 0):
                     truth_iou_noise = 0
