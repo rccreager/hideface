@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 import pandas as pd
 
+
 def draw_histo(df, col_name, x_start, bin_width, n_bins, title, output_dir, output_filename):
     """
     Create a histogram from a pandas dataframe column
@@ -22,7 +23,7 @@ def draw_histo(df, col_name, x_start, bin_width, n_bins, title, output_dir, outp
         output_filename: the name you'd like to give the png output image
     """
     plt = df[col_name].plot.hist(
-            bins=[bin_width*(x+0.5)+x_start for x in np.arange(0,n_bins)], 
+            bins=[bin_width * (x + 0.5) + x_start for x in np.arange(0, n_bins)], 
             edgecolor='black', 
             color='#88d498')
     plt.set_title(title)
@@ -30,6 +31,7 @@ def draw_histo(df, col_name, x_start, bin_width, n_bins, title, output_dir, outp
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0,3)) 
     plt.get_figure().savefig(os.path.join(output_dir,output_filename))
     plt.get_figure().clf()
+
 
 if __name__ == "__main__":
     performance_csv = 'data/10k_imgs_addnoise/performance_list.csv'
@@ -68,7 +70,7 @@ if __name__ == "__main__":
         x_start = -0.01
         n_bins = 31
         true_box_size_frac_plt = (df['true_box_size']/df['img_size']).plot.hist(
-                bins=[bin_width*(x+0.5)+x_start for x in np.arange(0,n_bins)], 
+                bins=[bin_width * (x + 0.5) + x_start for x in np.arange(0, n_bins)],
                 edgecolor='black', 
                 color='#88d498')
         print('true_box_size_frac max: ' 
