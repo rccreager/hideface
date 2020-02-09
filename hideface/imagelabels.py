@@ -22,13 +22,15 @@ class ImageLabels:
         add_detector_labels: given a detector_dict, set the found_box_dict and return
         add_truth_labels: given a truth file, set the truth_box_list and return
         add_all_labels: given a truth file and detector_dict, set relevant attributes and return
-        draw_images: drawn image(s) with available boxes and set drawn_images attribute. One image per found_box_dict entry.
+        draw_images: drawn image(s) with available boxes and set drawn_images attribute
         delete_drawn_images: delete all images in drawn_images list and set list to empty
     """
+    
     def __init__(self, img_path, true_box_list=[], found_box_dict={}, **kwargs):
         self.img_path = img_path
         if (not os.path.isfile(self.img_path)): 
-            print('Attempting to create ImageLabels object for bad image path: ' + str(self.img_path))
+            print('Attempting to create ImageLabels object for bad image path: ' 
+                    + str(self.img_path))
             raise IOError
         try:
             image = Image.open(img_path)
@@ -44,45 +46,55 @@ class ImageLabels:
         self.found_box_dict = found_box_dict
         self.__dict__.update(kwargs)
         self.drawn_images = [] 
+    
     def __str__(self):
-        main_str = '(Img Path: \n{} \nTruth Box List: \n{} \nFound Box Dict: \n{}\n'.format(self.img_path, self.true_box_list, self.found_box_dict)
+        main_str = '(Img Path: \n{} \nTruth Box List: \n{} \nFound Box Dict: \n{}\n'.format(
+            self.img_path, 
+            self.true_box_list, 
+            self.found_box_dict)
         kwargs_str = 'Attack Information:'
         for key, item in self.kwargs.items(): kwargs_str += '\n{}: {}'.format(key, item)
         kwargs_str += ')'
         return main_str + kwargs_str
+    
     def __repr__(self):
         return str(self)
+    
     def add_detector_labels(self,detector_dict):
         """
-        For each dictionary entry {detector_name:detector}, find the FaceBox list for that detector and modify the class attribute
+        For each dictionary entry, find the FaceBox list for that detector and modify attribute
         
         Args:
             detector_dict: a dictionary pairing a facial detector name to the detector
         Returns: 
             self
         """
-        if (not os.path.isfile(self.img_path)): sys.exit('Attempted to add detector labels to bad image: ' + self.img_path)
+        if (not os.path.isfile(self.img_path)): 
+            sys.exit('Attempted to add detector labels to bad image: ' + self.img_path)
         found_box_dict = {}
         for detector_name, detector in detector_dict.items():
             found_box_list = tools.get_found_boxes(self.img_path,detector)
             found_box_dict.update( {detector_name : found_box_list} )
         self.found_box_dict = found_box_dict
         return self
+    
     def add_truth_labels(self,truth_file):
         """
-        Given a WiderFace truth file, find the ground truth FaceBox for the image and modify the class attribute
+        Given a WiderFace truth file, find the ground truth FaceBox(es) and modify attribute
         
         Args:
             truth_file: the path to a WiderFace truth file
         Returns:
             self    
         """
-        if (not os.path.isfile(self.img_path)): sys.exit('Attempted to add truth labels to bad image: ' + self.img_path)
+        if (not os.path.isfile(self.img_path)): 
+            sys.exit('Attempted to add truth labels to bad image: ' + self.img_path)
         true_box_list=[]
         img_num = re.findall(r'[0-9]+_[0-9]+\.jpg', str(self.img_path))[0][:-4] 
         if(truth_file != None): true_box_list = tools.get_ground_truth_boxes(img_num,truth_file)
         self.true_box_list = true_box_list
         return self
+    
     def add_all_labels(self,truth_file,detector_dict):
         """
         Apply detector and truth labels in one step
@@ -96,9 +108,10 @@ class ImageLabels:
         self.add_detector_labels(detector_dict)
         self.add_truth_labels(truth_file)
         return self
+    
     def draw_images(self, output_dir, name_str=''):
         """
-        For a given ImageLabels object, draw image for each set of detector labels and append drawn filename to self.drawn_images
+        Draw image for each set of detector labels and append drawn filename to self.drawn_images
         
         Args:
             output_dir: a string giving the path to the desired output directory
@@ -128,6 +141,7 @@ class ImageLabels:
             filename = output_dir + '/image_'+ detector_name + holder_str + '_' + file_num+'.jpg'
             io.imsave(filename, image_copy)
             self.drawn_images.append(filename) 
+    
     def delete_drawn_images(self):
         """
         Delete all drawn images and set self.drawn_images to []
