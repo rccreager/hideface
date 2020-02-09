@@ -147,6 +147,24 @@ def get_ground_truth_boxes(img_num, truth_file):
                     box_list.append(box)
     return box_list                   
 
+def draw_boxes(image, box_list, color_rgb):
+    """
+    Draw FaceBoxes of a given color onto image
+
+    Args:
+        image: an image for drawing over
+        box_list: a list of FaceBox objects to draw
+        color_rgb: the color to draw the box, given as an RGB triplet 
+    """
+    for box in box_list:
+        right_edge = box.x1+box.width-1
+        if (right_edge >= image.shape[1]): right_edge = image.shape[1]-1
+        bottom_edge = box.y1+box.height-1
+        if (bottom_edge>= image.shape[0]): bottom_edge = image.shape[0]-1
+        rr,cc = polygon_perimeter([box.y1, box.y1, bottom_edge, bottom_edge],
+                                 [box.x1, right_edge, right_edge, box.x1])
+        image[rr, cc] = color_rgb
+
 def get_matches(target_box_list, potential_match_box_list):
     """
     Given a target list of FaceBox objects, finds the best match for each target
@@ -167,22 +185,4 @@ def get_matches(target_box_list, potential_match_box_list):
             if (new_iou > old_iou):
                 box_pair.match_box = potential_match_box
     return best_matches
-
-def draw_boxes(image, box_list, color_rgb):
-    """
-    Draw FaceBoxes of a given color onto image
-
-    Args:
-        image: an image for drawing over
-        box_list: a list of FaceBox objects to draw
-        color_rgb: the color to draw the box, given as an RGB triplet 
-    """
-    for box in box_list:
-        right_edge = box.x1+box.width-1
-        if (right_edge >= image.shape[1]): right_edge = image.shape[1]-1
-        bottom_edge = box.y1+box.height-1
-        if (bottom_edge>= image.shape[0]): bottom_edge = image.shape[0]-1
-        rr,cc = polygon_perimeter([box.y1, box.y1, bottom_edge, bottom_edge],
-                                 [box.x1, right_edge, right_edge, box.x1])
-        image[rr, cc] = color_rgb
 
