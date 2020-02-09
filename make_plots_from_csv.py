@@ -69,13 +69,13 @@ if __name__ == "__main__":
         bin_width = 0.01
         x_start = -0.01
         n_bins = 31
-        true_box_size_frac_plt = (df['true_box_size']/df['img_size']).plot.hist(
+        true_box_size_frac_plt = (df['true_box_size'] / df['img_size']).plot.hist(
                 bins=[bin_width * (x + 0.5) + x_start for x in np.arange(0, n_bins)],
                 edgecolor='black', 
                 color='#88d498')
         print('true_box_size_frac max: ' 
-            + str((df['true_box_size']/df['img_size']).max()) 
-            + ', min: ' + str((df['true_box_size']/df['img_size']).min()))
+            + str((df['true_box_size'] / df['img_size']).max()) 
+            + ', min: ' + str((df['true_box_size'] / df['img_size']).min()))
         true_box_size_frac_plt.set_title('True Box Size as a Fraction of Total Image Size')
         true_box_size_frac_plt.get_figure().savefig(output_dir + 'true_box_size_frac_hist.png')
         true_box_size_frac_plt.get_figure().clf()
