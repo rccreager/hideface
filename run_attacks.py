@@ -77,6 +77,11 @@ def test_paths(attack_record_filename, result_counter_filename, output_dir):
         user_input = input('Output directory not empty: ' + output_dir + '\nProceed? [y/N]')
         if (user_input != 'y'): sys.exit('Exiting')
 
+def quality_error(error_text, counter_name, tunnel_dict):
+    #print(error_text)
+    tunnel_dict[counter_name] += 1
+    raise ValueError(error_text)
+
 def test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dict, output_dir):
     """
     Run some quality tests and checks on an input image and draw the image with true and found face boxes
@@ -95,21 +100,24 @@ def test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dic
     try: 
         image_labels = imagelabels.ImageLabels(img_path)
     except IOError: 
-        print('File Path does not exist or cannot be found: ' + str(img_path)); tunnel_dict['bad_image'] += 1; raise IOError
+        quality_error('File Path does not exist or cannot be found: ' + str(img_path), 'bad_image', tunnel_dict)
     except: 
-        print('Problem during initialization of ImageLabels (probably a corrupted image): ' + str(img_path)); tunnel_dict['bad_image'] += 1; raise ValueError
+        error_str = 'Problem during initialization of ImageLabels (probably a corrupted image): ' + str(img_path)
+        quality_error(error_str, 'bad_image', tunnel_dict)
     image_labels.add_all_labels(truth_file, detector_dict)
     if (len(image_labels.true_box_list) > 1): 
-        print('Found >1 true faces, skipping'); tunnel_dict['multiple_faces_count'] += 1; raise ValueError
+        quality_error('Found >1 true faces, skipping','multiple_faces_count',tunnel_dict)
     if (len(image_labels.true_box_list) == 0): 
-        print('Found 0 true faces, skipping'); tunnel_dict['zero_faces_count'] += 1; raise ValueError
+        quality_error('Found 0 true faces, skipping','zero_faces_count',tunnel_dict)
     if (image_labels.true_box_list[0].quality != tools.TruthBoxQuality(0,0,0,0,0,0)):
-        print('True Face Quality too poor (' + str(image_labels.true_box_list[0].quality) + '), skipping'); tunnel_dict['bad_quality_count'] += 1; raise ValueError
+        error_str = 'True Face Quality too poor (' + str(image_labels.true_box_list[0].quality) + '), skipping'
+        quality_error(error_str, 'bad_quality_count', tunnel_dict)
     if (len(image_labels.found_box_dict[detector_name]) == 0):
-        print('Could not find face prior to noise application, skipping'); tunnel_dict['no_found_faces_count'] += 1; raise ValueError
+        quality_error('Could not find face prior to noise application, skipping','no_found_faces_count',tunnel_dict)
     truth_iou_no_noise = image_labels.true_box_list[0].iou(image_labels.found_box_dict[detector_name][0])
     if (truth_iou_no_noise < iou_cutoff_value):
-        print('Found a face, but match to truth poor (IoU < ' + str(iou_cutoff_value)); tunnel_dict['no_found_faces_count'] += 1; raise ValueError
+        error_str = 'Found a face, but match to truth poor (IoU < ' + str(iou_cutoff_value)
+        quality_error(error_str, 'no_found_faces_count', tunnel_dict)
     image_labels.draw_images(output_dir)
     return image_labels, truth_iou_no_noise
 
@@ -144,7 +152,9 @@ if __name__ == "__main__":
             print('Testing Image: ' + img_num + '\t(' + str(count) + '/' + str(num_imgs) + ')')
             
             try: image_labels, truth_iou_no_noise = test_image(img_path, truth_file, detector_dict, iou_cutoff_value, tunnel_dict, output_dir)
-            except: continue
+            except ValueError as e: 
+                print(e)
+                continue
     
             epsilon = epsilon_start_value
             while (epsilon < max_epsilon_value):
