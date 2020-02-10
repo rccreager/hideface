@@ -148,7 +148,8 @@ if __name__ == "__main__":
     output_dir = 'data/testing'
     attack_record_filename = 'performance_list.csv'
     result_counter_filename = 'tunnel.csv'
-    use_mult_noise = False # 
+    use_mult_noise = False #use multiplicative noise, where large pixel value means more noise
+    apply_noise_to_face = True
     epsilon_start_value = 16
     max_epsilon_value = 240
     epsilon_delta = 16
@@ -197,11 +198,19 @@ if __name__ == "__main__":
             epsilon = epsilon_start_value
             while (epsilon < max_epsilon_value):
                 try:
-                    attacked_img_path, noise_img_path = attacks.create_noisy_image(
-                        img_path, 
-                        epsilon, 
-                        output_dir, 
-                        use_mult_noise=use_mult_noise)
+                    if (apply_noise_to_face):
+                        attacked_img_path, noise_img_path = attacks.create_noisy_face(
+                                image_labels.found_box_dict[detector_name][0], 
+                                img_path, 
+                                epsilon, 
+                                output_dir, 
+                                use_mult_noise=use_mult_noise)
+                    else:
+                        attacked_img_path, noise_img_path = attacks.create_noisy_image(
+                            img_path, 
+                            epsilon, 
+                            output_dir, 
+                            use_mult_noise=use_mult_noise)
                 except ValueError as e: 
                     print(e)
                     continue
