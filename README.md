@@ -11,7 +11,7 @@ This package is designed for **black-box** attacks against facial detection algo
 This framework is useful for adding privacy filters to images (to hide them from face detection) or for testing the robustness of face detection algorithms against attacks.
 
 Attacks are implemented in the `hideface/attacks.py` file -- a few examples are provided.
-Detectors are provided as a list in the `run_attacks.py` script -- for now, only the DLib HoG detector is used. 
+Detectors are provided as a dictionary in the `run_attacks.py` script -- for now, only the DLib HoG detector is used. 
 
 ## Setup and Installation
 This package uses DLib for its face detection -- this is a C++ package and it takes a long time to build, so be patient! 
@@ -25,5 +25,6 @@ This package uses DLib for its face detection -- this is a C++ package and it ta
 
 ## Running a Test Attack  
 
+For a test and example of how this package works, run `example_attack.py`, which will test 100 images from a subset of the WIDER-FACE dataset:
 
-
+    python3 example_attack.py
