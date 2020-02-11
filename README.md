@@ -1,17 +1,22 @@
-# Face Detection and Adversarial Attacks
+# HideFace 
 
-This is a repository for "Face Detection and Adversarial Attacks" project. 
-These tools implement several popular face-detection algorithms (HoG and YOLOv3) as well as a variety of adversarial attacks.
-The resulting changes to face detection can be visualized and quantified to determine whether the attacks ''beats'' the detector.
+Please see `http://bit.ly/rccreager_slides` for the slides corresponding to this package!
+
+HideFace is a testing framework for face detectors and black box attacks.
+This framework is useful for adding privacy filters to images (to hide them from face detection) or for testing the robustness of face detection algorithms against attacks.
+
+Attacks are implemented in the `hideface/attacks.py` file -- a few examples are provided.
+Detectors are provided as a list in the `run_attacks.py` script -- for now, only the DLib HoG detector is used. 
 
 ## Setup and Installation
 
-Here are some directions on setting up your environment 
+    git clone https://github.com/rccreager/hideface.git
+    source built/apt_get.sh
+    python3 -m venv build/hideface_env
+    source build/hideface_env/bin/activate
+    pip3 install -r build/requirements.txt
 
-## Running Face Recognition
+## Running a Test Attack  
 
-## Running Adversarial Attacks
-
-## Testing Recognition after Attack
 
 
