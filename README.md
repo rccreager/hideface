@@ -6,6 +6,7 @@ HideFace is a testing framework for face detectors and adversarial attacks.
 Generally, we can divide image attacks into two classes:
 * White-box: attacks that use information about the algorithm being attacked (for example, model weights)
 * Black-box: attacks that assume no knowledge of the algorithm being attacked
+
 This package is designed for **black-box** attacks against facial detection algorithms because no information about the model itself is used. 
 This framework is useful for adding privacy filters to images (to hide them from face detection) or for testing the robustness of face detection algorithms against attacks.
 
