@@ -130,7 +130,8 @@ class ImageLabels:
             if (len(self.true_box_list) == 0): holder_str = holder_str + '_no_truth'
             if (name_str != ''): holder_str = holder_str + '_' + name_str + '_'
             filename = output_dir + '/image_'+holder_str+file_num+'.jpg'
-            io.imsave(filename, image)
+            im = Image.fromarray(image)
+            im.save(filename)
             self.drawn_images.append(filename)
         for detector_name, found_box_list in self.found_box_dict.items():
             image_copy = copy.deepcopy(image)
@@ -138,7 +139,8 @@ class ImageLabels:
             holder_str = ''
             if (name_str != ''): holder_str = holder_str + '_' + name_str
             filename = output_dir + '/image_'+ detector_name + holder_str + '_' + file_num+'.jpg'
-            io.imsave(filename, image_copy)
+            im = Image.fromarray(image_copy)
+            im.save(filename)
             self.drawn_images.append(filename) 
     
     def delete_drawn_images(self):

@@ -45,10 +45,12 @@ def create_noisy_image(original_img_path, epsilon, output_dir, use_mult_noise=Fa
     noise_str = 'multnoise' if (use_mult_noise) else 'addnoise'
     image_file_name = 'unlabeled_'+noise_str+'_eps'+str(epsilon)+'_'+file_num+'.jpg'
     image_file_path = os.path.join(output_dir,image_file_name)
-    io.imsave(image_file_path,image_pixels)
+    im_pix = Image.fromarray(image_pixels)
+    im_pix.save(image_file_path)
     noise_file_name = noise_str+ '_'+str(epsilon)+'_'+file_num+'.jpg'
     noise_file_path = os.path.join(output_dir,noise_file_name)
-    io.imsave(noise_file_path,noise)
+    im_noise = Image.fromarray(noise)
+    im_noise.save(noise_file_path)
     return image_file_path, noise_file_path
 
 def create_noisy_face(facebox, original_img_path, epsilon, output_dir, use_mult_noise=False):
@@ -80,8 +82,10 @@ def create_noisy_face(facebox, original_img_path, epsilon, output_dir, use_mult_
     noise = np.zeros(pixels.shape)
     x1 = facebox.x1
     y1 = facebox.y1
-    x2 = facebox.x1 + facebox.width
-    y2 = facebox.y1 + facebox.height
+    if (x1 < 0): x1 = 0
+    if (y1 < 0): y1 = 0
+    x2 = x1 + facebox.width
+    y2 = y1 + facebox.height
     if (facebox.width == 0 or facebox.height == 0):
         raise ValueError('Got a facebox with width or height 0 (size w' + str(facebox.width) 
             + ' h' + str(facebox.height) + '): ' + original_img_path) 
@@ -98,8 +102,10 @@ def create_noisy_face(facebox, original_img_path, epsilon, output_dir, use_mult_
     noise_str = 'face_multnoise' if (use_mult_noise) else 'face_addnoise'
     image_file_name = 'face_unlabeled_'+noise_str+'_eps'+str(epsilon)+'_'+file_num+'.jpg'
     image_file_path = os.path.join(output_dir,image_file_name)
-    io.imsave(image_file_path,image_pixels)
+    im_pix = Image.fromarray(image_pixels)
+    im_pix.save(image_file_path)
     noise_file_name = noise_str+ '_'+str(epsilon)+'_'+file_num+'.jpg'
     noise_file_path = os.path.join(output_dir,noise_file_name)
-    io.imsave(noise_file_path,noise)
+    im_noise = Image.fromarray(noise)
+    im_noise.save(noise_file_path)
     return image_file_path, noise_file_path
