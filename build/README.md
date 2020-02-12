@@ -1,9 +1,8 @@
-# Setting up your environment
-
-These directions assume you are working from a fresh Ubuntu 18.04 EC2 instance.
-I'm including some optional directions for X11 forwarding; if you are working on a local machine, this isn't needed.
-
 ## Setting up X11 forwarding (optional)
+The following directions will allow you to view images stored on a remote machine through your local display with X11 forwarding.
+
+If you are working entirely on your local machine or plan to download images to your local machine, this isn't needed.
+
 When you ssh into your instance, make sure to enable the **-Y** flag.
 Edit your sshd_config file:
     
@@ -20,13 +19,4 @@ Finally, install some X11 tools and test that your forwarding works with **xcloc
 
 If you set it up right, a little clock will appear on your screen!
 
-## Installing apt-get and pip3 packages
-The script **apt_get.sh** includes sudo commands to install all the necessary systemwide tools.
-After that, you can use **requirements.txt** to install the needed python packages to your pip3.
-I would recommend setting up a virtual environment first (the second and third lines):
-
-    source build/apt_get.sh
-    python3 -m venv build/my_first_env
-    source build/my_first_env/bin/activate
-    pip3 install build/requirements.txt
-
+This will allow you to view images on a remote machine through your local display.

@@ -82,6 +82,9 @@ def create_noisy_face(facebox, original_img_path, epsilon, output_dir, use_mult_
     y1 = facebox.y1
     x2 = facebox.x1 + facebox.width
     y2 = facebox.y1 + facebox.height
+    if (facebox.width == 0 or facebox.height == 0):
+        raise ValueError('Got a facebox with width or height 0 (size w' + str(facebox.width) 
+            + ' h' + str(facebox.height) + '): ' + original_img_path) 
     face_size = (facebox.height,facebox.width,3)
     noise[y1:y2, x1:x2] = (epsilon/255.0) * np.random.normal(loc=0.0, scale=1.0, size=face_size)
     image_pixels = pixels * (1.0 + noise) if (use_mult_noise) else pixels + noise
