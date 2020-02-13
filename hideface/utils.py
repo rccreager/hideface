@@ -3,7 +3,36 @@ import sys
 import csv
 from skimage import io
 from skimage.metrics import structural_similarity as ssim
-from hideface import tools, imagelabels
+from hideface import tools, imagelabels, attacks
+from PIL import Image
+
+
+def draw_img_noise_pair_arrays(image_noise_pairs, epsilon, img_num, output_dir, use_mult_noise=False):
+    """
+    Given a list of ImgNoisePair objects, epsilon value, img_num, and output_dir, draw the img
+    and noise and save them to the output_dir with appropriate file names
+
+    Args:
+        image_noise_pairs: list of ImgNoisePair objects
+        epsilon: the noise epsilon value used
+        img_num: a string giving the wider-face file number
+        output_dir: directory to write the output files
+        use_mult_noise: if True, use multiplicative noise file naming. Otherwise use additive name
+    """
+    for test_num, img_pair in enumerate(image_noise_pairs):
+        attacked_img = img_pair.img
+        noise_img = img_pair.noise
+        noise_str = 'face_unlabeled_multnoise' if (use_mult_noise) else 'face_unlabeled_addnoise'
+        file_suffix = '_eps' + str(epsilon) + '_testnum' + str(test_num) + '_' + img_num +'.jpg'
+        image_file_name = 'face_unlabeled_' + noise_str + file_suffix
+        image_file_path = os.path.join(output_dir,image_file_name)
+        im_pix = Image.fromarray(attacked_img)
+        im_pix.save(image_file_path)
+        noise_file_name = noise_str + file_suffix
+        noise_file_path = os.path.join(output_dir,noise_file_name)
+        im_noise = Image.fromarray(noise_img)
+        im_noise.save(noise_file_path)
+
 
 def get_ssim(image_labels, attacked_image_labels):
     """
@@ -120,8 +149,8 @@ def test_image(img_path, truth_file, detector_dict, detector_name, iou_cutoff_va
     if (len(image_labels.true_box_list) == 0):
         quality_error('Found 0 true faces, skipping','zero_faces_count',tunnel_dict)
     if (image_labels.true_box_list[0].quality != tools.TruthBoxQuality(0,0,0,0,0,0)):
-        error_str = ('True Face Quality too poor ('
-                + str(image_labels.true_box_list[0].quality) + '), skipping')
+        error_str = ('True Face Quality too poor '
+                + str(image_labels.true_box_list[0].quality) + ', skipping')
         quality_error(error_str, 'bad_quality_count', tunnel_dict)
     if (len(image_labels.found_box_dict[detector_name]) == 0):
         error_str = 'Could not find face prior to noise application, skipping'
@@ -129,7 +158,7 @@ def test_image(img_path, truth_file, detector_dict, detector_name, iou_cutoff_va
     true_box = image_labels.true_box_list[0]
     truth_iou_no_noise = true_box.iou(image_labels.found_box_dict[detector_name][0])
     if (truth_iou_no_noise < iou_cutoff_value):
-        error_str = 'Found a face, but match to truth poor (IoU < ' + str(iou_cutoff_value)
+        error_str = 'Found a face, but match to truth poor (IoU < ' + str(iou_cutoff_value) + ')'
         quality_error(error_str, 'no_found_faces_count', tunnel_dict)
     image_labels.draw_images(output_dir)
     return image_labels, truth_iou_no_noise

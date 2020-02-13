@@ -9,19 +9,21 @@ import numpy as np
 from skimage import io
 from skimage.metrics import structural_similarity as ssim
 from hideface import tools, imagelabels, attacks, utils
+from PIL import Image
 
 
 if __name__ == "__main__":
     truth_file = 'data/wider_face_split/wider_face_train_bbx_gt.txt'
     detector_dict = {'hog':dlib.get_frontal_face_detector()} 
-    num_imgs = 100
+    num_imgs = 25
     img_input_dir = 'data/WIDER_train/images/51--Dresses'
     img_paths = utils.get_img_paths(img_input_dir, num_imgs)
     output_dir = 'data/attack_example'
     attack_record_filename = 'performance_list.csv'
     result_counter_filename = 'tunnel.csv'
     use_mult_noise = False #use multiplicative noise, where large pixel value means more noise
-    apply_noise_to_face = True
+    n_attack_tests = 1
+    attack_success_freq_threshold = 0.8
     epsilon_start_value = 16
     max_epsilon_value = 240
     epsilon_delta = 16
@@ -66,61 +68,73 @@ if __name__ == "__main__":
                 'img_size':image_labels.img_shape[0]*image_labels.img_shape[1],
                 'true_box_size':box_height * box_width,
                 'truth_iou_no_noise':truth_iou_no_noise,
-                'truth_iou_noise':-1,
-                'ssim':-1}
+                'truth_iou_noise_avg':-1,
+                'ssim_avg':-1}
             epsilon = epsilon_start_value
             while (epsilon < max_epsilon_value):
                 try:
-                    if (apply_noise_to_face):
-                        attacked_img_path, noise_img_path = attacks.create_noisy_face(
-                                image_labels.found_box_dict[detector_name][0], 
-                                img_path, 
-                                epsilon, 
-                                output_dir, 
-                                use_mult_noise=use_mult_noise)
-                    else:
-                        attacked_img_path, noise_img_path = attacks.create_noisy_image(
+                    image_noise_pairs = attacks.create_noisy_face(
+                            image_labels.found_box_dict[detector_name][0], 
                             img_path, 
                             epsilon, 
+                            n_attack_tests, 
                             output_dir, 
                             use_mult_noise=use_mult_noise)
                 except ValueError as e: 
                     print(e)
                     continue
-                noisy_image_labels = imagelabels.ImageLabels(attacked_img_path)
-                noisy_image_labels = noisy_image_labels.add_detector_labels(detector_dict)
-                if (len(noisy_image_labels.found_box_dict[detector_name]) == 0):
-                    truth_iou_noise = 0
-                else:
-                    true_box = image_labels.true_box_list[0]
-                    found_box = noisy_image_labels.found_box_dict[detector_name][0]
-                    truth_iou_noise = true_box.iou(found_box)
-                ssim_val = utils.get_ssim(image_labels, noisy_image_labels) 
-                performance_dict['epsilon'] = epsilon
-                performance_dict['truth_iou_noise'] = truth_iou_noise
-                performance_dict['ssim'] = ssim_val
-                #if you find no faces or the truth-found face IoU is small, the attack has succeeded
-                if (len(noisy_image_labels.found_box_dict[detector_name]) == 0 
-                        or (len(noisy_image_labels.found_box_dict[detector_name]) == 1 
-                            and truth_iou_noise < iou_cutoff_value)):
-                    if (len(noisy_image_labels.found_box_dict[detector_name]) == 0): 
-                        print('No boxes found with epsilon: ' + str(epsilon))
-                    if (len(noisy_image_labels.found_box_dict[detector_name]) == 1 
-                            and truth_iou_noise < iou_cutoff_value): 
-                        print('Truth-Found IoU < ' 
-                                + str(iou_cutoff_value) + ' with epsilon: ' + str(epsilon))
+                attack_success_count = 0
+                attack_fail_count = 0
+                truth_iou_noise_avg = 0
+                for img_pair in image_noise_pairs:
+                    attacked_img = img_pair.img
+                    noise_img = img_pair.noise
+                    found_boxes = tools.get_found_boxes(attacked_img, detector_dict[detector_name]) 
+                    if (len(found_boxes) == 0):
+                        truth_iou_noise = 0
+                    else:
+                        true_box = image_labels.true_box_list[0]
+                        found_box = found_boxes[0]
+                        truth_iou_noise = true_box.iou(found_box)
+                        truth_iou_noise_avg += truth_iou_noise / n_attack_tests
+                    #if you find no faces or the truth-found face IoU is small, the test attack succeeded
+                    if (len(found_boxes) == 0 
+                            or (len(found_boxes) == 1 and truth_iou_noise < iou_cutoff_value)):
+                        attack_success_count += 1 
+                    attack_fail_count += 1
+                #if attack succeed in enough tests, write files as output and report success
+                if (attack_fail_count == 0 
+                    or attack_success_count / attack_fail_count >= attack_success_freq_threshold):
+                    print('Attack succeeded at least ' + str(100*attack_success_freq_threshold) 
+                        + '% of the time with epsilon: ' + str(epsilon))
                     tunnel_dict['successful_attack'] += 1
+                    performance_dict['epsilon'] = epsilon
+                    performance_dict['truth_iou_noise_avg'] = truth_iou_noise_avg
+                    img = Image.open(image_labels.img_path)
+                    img = np.array(img)
+                    utils.draw_img_noise_pair_arrays(image_noise_pairs, epsilon, img_num, output_dir)
+                    ssim_avg = 0
+                    for test_num, img_pair in enumerate(image_noise_pairs):
+                        attacked_img = img_pair.img
+                        ssim_avg += ssim(img,
+                            attacked_img,
+                            data_range = attacked_img.max() - attacked_img.min(),
+                            multichannel=True)
+                    performance_dict['ssim_avg'] = ssim_avg / n_attack_tests
                     break
-                #if attack failed with given epsilon value, delete old image and increase epsilon
-                os.remove(noisy_image_labels.img_path)
-                os.remove(noise_img_path)
-                epsilon += epsilon_delta
+                #if attack failed with given epsilon value, increase epsilon
+                if (attack_success_count / attack_fail_count < attack_success_freq_threshold):
+                    print(str(attack_success_count) + '/' + str(attack_fail_count) 
+                            + ' attacks succeeded with epsilon=' + str(epsilon)
+                            + '. This is below threshold (' + str(attack_success_freq_threshold) 
+                            + '). Continuing...')
+                    epsilon += epsilon_delta
             #if epsilon is larger than max_epsilon_value, the attack has failed 
             else: 
                 print('Noise attack failed')
                 performance_dict['epsilon'] = -1
-                performance_dict['truth_iou_noise'] = -1
-                performance_dict['ssim'] = -1
+                performance_dict['truth_iou_noise_avg'] = -1
+                performance_dict['ssim_avg'] = -1
                 tunnel_dict['fail_count'] += 1
             performance_list.append(performance_dict)
     utils.write_csv(performance_list, attack_record_filename, output_dir)

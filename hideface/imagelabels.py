@@ -71,8 +71,14 @@ class ImageLabels:
         if (not os.path.isfile(self.img_path)): 
             sys.exit('Attempted to add detector labels to bad image: ' + self.img_path)
         found_box_dict = {}
+        try:
+            image = Image.open(self.img_path).convert("RGB")
+            image.verify() # verify that it is, in fact an image
+        except (IOError, SyntaxError) as e:
+            print('Input Image Read Error (add_detector_labels): ' + img_path)
+        image = np.array(image)
         for detector_name, detector in detector_dict.items():
-            found_box_list = tools.get_found_boxes(self.img_path,detector)
+            found_box_list = tools.get_found_boxes(image,detector)
             found_box_dict.update( {detector_name : found_box_list} )
         self.found_box_dict = found_box_dict
         return self

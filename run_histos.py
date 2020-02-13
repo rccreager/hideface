@@ -34,8 +34,8 @@ def draw_histo(df, col_name, x_start, bin_width, n_bins, title, output_dir, outp
 
 
 if __name__ == "__main__":
-    performance_csv = 'data/10k_imgs_addnoise/performance_list.csv'
-    output_dir = '/home/ubuntu/hideface'
+    performance_csv = 'data/attack_example/performance_list.csv'
+    output_dir = '.'
     with open (performance_csv) as csv_file:
         df = pd.read_csv(csv_file, 
                 dtype={
@@ -44,8 +44,8 @@ if __name__ == "__main__":
                     'img_size': int, 
                     'true_box_size':int,
                     'truth_iou_no_noise':float,
-                    'truth_iou_noise':float,
-                    'ssim':float})  
+                    'truth_iou_noise_avg':float,
+                    'ssim_avg':float})  
         print(df.head(10))
         df = df[df['epsilon'] >= 0] # get rid of rows from failed attacks  
     
@@ -61,10 +61,11 @@ if __name__ == "__main__":
         iou_title = 'IoU between Found and True Box Prior to Attack'
         iou_filename = 'truth_iou_no_noise.png'
         draw_histo(df, 'truth_iou_no_noise', -0.05, 0.05, 21, iou_title, output_dir, iou_filename) 
-        iou_title = 'IoU between Found and True Box After Noise Attack'
+        iou_title = 'IoU between Found and True Box After Noise Attack (Average)'
         iou_filename = 'truth_iou_noise.png'
-        draw_histo(df, 'truth_iou_noise', -0.05, 0.05, 21, iou_title, output_dir, iou_filename)
-        draw_histo(df, 'ssim', -0.05, 0.05, 21, 'Structural Similarity', output_dir, 'ssim.png')
+        draw_histo(df, 'truth_iou_noise_avg', -0.05, 0.05, 21, iou_title, output_dir, iou_filename)
+        ssim_title = 'Structural Similarity (Average)'
+        draw_histo(df, 'ssim_avg', -0.05, 0.05, 21, ssim_title, output_dir, 'ssim.png')
 
         bin_width = 0.01
         x_start = -0.01

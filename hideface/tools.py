@@ -3,7 +3,6 @@ import os
 import sys
 from skimage import io
 import numpy as np
-from PIL import Image
 from skimage.draw import polygon_perimeter
 
 class TruthBoxQuality:
@@ -118,23 +117,17 @@ class FaceBoxMatch:
         return self.__dict__ == other.__dict__
 
 
-def get_found_boxes(img_path, detector, upsample=1):
+def get_found_boxes(image, detector, upsample=1):
     """
     Get a list of FaceBox objects found by a given detector
 
     Args:
-       img_path: the path to the image of interest 
+       image: a numpy array for a given image
        detector: the face detector you want to use
        upsample: optional upsampling value
     Returns:
        found_box_list: list of FaceBox objects found in the image   
     """
-    try:
-        image = Image.open(img_path).convert("RGB")
-        image.verify() # verify that it is, in fact an image
-    except (IOError, SyntaxError) as e: 
-        print('Input Image Read Error (get_found_boxes): ' + img_path)   
-    image = np.array(image)
     try: found_faces = detector(image, upsample)
     except:
         error_str = ('get_found_boxes detector object failed to find boxes' 
