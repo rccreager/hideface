@@ -8,7 +8,8 @@ from matplotlib.ticker import MultipleLocator
 import pandas as pd
 
 
-def draw_histo(df, col_name, x_start, bin_width, n_bins, title, output_dir, output_filename):
+def draw_histo(df, col_name, x_start, bin_width, n_bins, title, output_dir, output_filename, 
+        log_y = False, describe = False):
     """
     Create a histogram from a pandas dataframe column
 
@@ -22,19 +23,23 @@ def draw_histo(df, col_name, x_start, bin_width, n_bins, title, output_dir, outp
         output_dir: the directory to write your output images to
         output_filename: the name you'd like to give the png output image
     """
-    plt = df[col_name].plot.hist(
+    my_plt = df[col_name].plot.hist(
             bins=[bin_width * (x + 0.5) + x_start for x in np.arange(0, n_bins)], 
             edgecolor='black', 
-            color='#88d498')
-    plt.set_title(title)
-    print(col_name + ' max: ' + str(df[col_name].max()) + ', min: ' + str(df[col_name].min()))
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,3)) 
-    plt.get_figure().savefig(os.path.join(output_dir,output_filename))
-    plt.get_figure().clf()
+            color='#88d498',
+            log=log_y)
+    my_plt.set_title(title)
+    pd.set_option('precision', 3)
+    plt.tight_layout(pad=5)
+    if(describe): print(df[col_name].describe())
+    plt.figtext(0.01,0.01, df[col_name].describe().loc[['mean','std','count']].to_string(),fontsize='x-large')
+    my_plt.ticklabel_format(style='sci', axis='x', scilimits=(0,3)) 
+    my_plt.get_figure().savefig(os.path.join(output_dir,output_filename))
+    my_plt.get_figure().clf()
 
 
 if __name__ == "__main__":
-    performance_csv = 'data/attack_example/performance_list.csv'
+    performance_csv = 'data/10k_attacks_12Feb/performance_list.csv'
     output_dir = '.'
     with open (performance_csv) as csv_file:
         df = pd.read_csv(csv_file, 
@@ -48,36 +53,67 @@ if __name__ == "__main__":
                     'ssim_avg':float})  
         print(df.head(10))
         df = df[df['epsilon'] >= 0] # get rid of rows from failed attacks  
-    
+        df['true_box_size_frac'] = df['true_box_size'] / df['img_size'] 
+        df_small = df[df['true_box_size_frac'] <= 0.038] 
+        df_big = df[df['true_box_size_frac'] > 0.038]
+
         eps_title = 'Epsilon Additive Noise Value to Beat HoG'
         eps_filename = 'eps_hist.png'
-        draw_histo(df, 'epsilon', -16, 16, 16, eps_title, output_dir, eps_filename)
         size_title = 'Image Size (Width x Height)'
         size_filename = 'img_size_hist.png'
-        draw_histo(df, 'img_size', 400000, 100000, 21, size_title, output_dir, size_filename) 
         box_title = 'True Face Box Size (Width x Height)'
         box_filename = 'true_box_size_hist.png'
-        draw_histo(df, 'true_box_size', -15000, 15000, 25, box_title, output_dir, box_filename) 
         iou_title = 'IoU between Found and True Box Prior to Attack'
         iou_filename = 'truth_iou_no_noise.png'
-        draw_histo(df, 'truth_iou_no_noise', -0.05, 0.05, 21, iou_title, output_dir, iou_filename) 
-        iou_title = 'IoU between Found and True Box After Noise Attack (Average)'
-        iou_filename = 'truth_iou_noise.png'
-        draw_histo(df, 'truth_iou_noise_avg', -0.05, 0.05, 21, iou_title, output_dir, iou_filename)
+        noise_iou_title = 'IoU between Found and True Box After Noise Attack (Average)'
+        noise_iou_filename = 'truth_iou_noise.png'
         ssim_title = 'Structural Similarity (Average)'
-        draw_histo(df, 'ssim_avg', -0.05, 0.05, 21, ssim_title, output_dir, 'ssim.png')
+        ssim_filename = 'ssim.png'
+        true_box_frac_title = 'True Box Size as a Fraction of Total Image Size'
+        true_box_frac_filename = 'true_box_size_frac_hist.png'
 
-        bin_width = 0.01
-        x_start = -0.01
-        n_bins = 31
-        true_box_size_frac_plt = (df['true_box_size'] / df['img_size']).plot.hist(
-                bins=[bin_width * (x + 0.5) + x_start for x in np.arange(0, n_bins)],
-                edgecolor='black', 
-                color='#88d498')
-        print('true_box_size_frac max: ' 
-            + str((df['true_box_size'] / df['img_size']).max()) 
-            + ', min: ' + str((df['true_box_size'] / df['img_size']).min()))
-        true_box_size_frac_plt.set_title('True Box Size as a Fraction of Total Image Size')
-        true_box_size_frac_plt.get_figure().savefig(output_dir + 'true_box_size_frac_hist.png')
-        true_box_size_frac_plt.get_figure().clf()
+        draw_histo(df, 'epsilon', -16, 16, 16, eps_title, output_dir, eps_filename)
+        draw_histo(df, 'img_size', 400000, 100000, 21, size_title, output_dir, size_filename) 
+        draw_histo(df, 'true_box_size', -15000, 15000, 25, box_title, output_dir, box_filename) 
+        draw_histo(df, 'truth_iou_no_noise', -0.05, 0.05, 21, iou_title, output_dir, iou_filename) 
+        draw_histo(df, 'truth_iou_noise_avg', -0.05, 0.05, 21, noise_iou_title, output_dir, 
+                noise_iou_filename)
+        draw_histo(df, 'ssim_avg', 0.48, 0.02, 26, ssim_title, output_dir, ssim_filename, 
+                log_y = True)
+        draw_histo(df, 'true_box_size_frac', -0.02, 0.02, 31, true_box_frac_title, output_dir, 
+                true_box_frac_filename, log_y = True, describe = True)
+
+        small_title = ' (Small Face)'
+        small_filename = 'smallface_'
+        draw_histo(df_small, 'epsilon', -16, 16, 16, eps_title + small_title, 
+                output_dir, small_filename + eps_filename)
+        draw_histo(df_small, 'img_size', 400000, 100000, 21, size_title + small_title, 
+                output_dir, small_filename + size_filename)
+        draw_histo(df_small, 'true_box_size', -15000, 15000, 25, box_title + small_title, 
+                output_dir, small_filename + box_filename)
+        draw_histo(df_small, 'truth_iou_no_noise', -0.05, 0.05, 21, iou_title + small_title, 
+                output_dir, small_filename + iou_filename)
+        draw_histo(df_small, 'truth_iou_noise_avg', -0.05, 0.05, 21, noise_iou_title + small_title, 
+                output_dir, small_filename + noise_iou_filename)
+        draw_histo(df_small, 'ssim_avg', 0.48, 0.02, 26, ssim_title + small_title, 
+                output_dir, small_filename + ssim_filename, log_y = True)
+        draw_histo(df_small, 'true_box_size_frac', -0.02, 0.02, 31, true_box_frac_title + small_title, 
+                output_dir, small_filename + true_box_frac_filename, log_y = True, describe = True)
+
+        big_title = ' (Big Face)'
+        big_filename = 'bigface_'
+        draw_histo(df_big, 'epsilon', -16, 16, 16, eps_title + big_title,
+                output_dir, big_filename + eps_filename)
+        draw_histo(df_big, 'img_size', 400000, 100000, 21, size_title + big_title,
+                output_dir, big_filename + size_filename)
+        draw_histo(df_big, 'true_box_size', -15000, 15000, 25, box_title + big_title,
+                output_dir, big_filename + box_filename)
+        draw_histo(df_big, 'truth_iou_no_noise', -0.05, 0.05, 21, iou_title + big_title,
+                output_dir, big_filename + iou_filename)
+        draw_histo(df_big, 'truth_iou_noise_avg', -0.05, 0.05, 21, noise_iou_title + big_title,
+                output_dir, big_filename + noise_iou_filename)
+        draw_histo(df_big, 'ssim_avg', 0.48, 0.02, 26, ssim_title + big_title,
+                output_dir, big_filename + ssim_filename, log_y = True)
+        draw_histo(df_big, 'true_box_size_frac', -0.02, 0.02, 31, true_box_frac_title + big_title,
+                output_dir, big_filename + true_box_frac_filename, log_y = True, describe = True)
 

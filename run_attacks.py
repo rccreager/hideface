@@ -22,7 +22,7 @@ if __name__ == "__main__":
     attack_record_filename = 'performance_list.csv'
     result_counter_filename = 'tunnel.csv'
     use_mult_noise = False #use multiplicative noise, where large pixel value means more noise
-    n_attack_tests = 5
+    n_attack_tests = 10
     attack_success_freq_threshold = 0.8
     epsilon_start_value = 16
     max_epsilon_value = 240
