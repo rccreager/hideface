@@ -27,7 +27,7 @@ The easiest way to run this package is with Docker.
 3. Run the Docker image:
 
         docker run -it rccreager/hideface:1.0 
-4. Skip to the next section, ``Running a Test Attack''
+Now you can go to the next section, ``Usage''. 
  
 ### Build yourself on Ubuntu
 
