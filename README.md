@@ -22,11 +22,9 @@ Detectors are provided as a dictionary in the `run_attacks.py` script -- for now
 The easiest way to run this package is with Docker.
 1. Install [Docker](https://docs.docker.com/install/)
 2. Pull the Docker image from Docker Hub:
-
-    docker pull rccreager/hideface:1.0
+        docker pull rccreager/hideface:1.0
 3. Run the Docker image:
-
-    docker run -it rccreager/hideface:1.0 
+        docker run -it rccreager/hideface:1.0 
 4. Skip to the next section, ``Running a Test Attack''
  
 ### Build yourself on Ubuntu
