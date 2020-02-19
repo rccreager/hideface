@@ -16,6 +16,19 @@ Attacks are implemented in the `hideface/attacks.py` file -- a few examples are 
 Detectors are provided as a dictionary in the `run_attacks.py` script -- for now, only the DLib HoG detector is used. 
 
 ## Setup and Installation
+
+### Setup with Docker
+
+The easiest way to run this package is with Docker.
+1. Install [Docker](https://docs.docker.com/install/)
+2. Pull the Docker image from Docker Hub:
+    docker pull rccreager/hideface:1.0
+3. Run the Docker image:
+    docker run -it rccreager/hideface:1.0 
+4. Skip to the next section, ``Running a Test Attack''
+ 
+### Build yourself on Ubuntu
+
 This package uses DLib for its face detection -- this is a C++ package and it takes a long time to build, so be patient! 
 The script `build/apt_get.sh` includes sudo commands to install all the necessary systemwide tools.
 After that, you can use `build/requirements.txt` to install the needed python packages to your pip3.
@@ -23,14 +36,14 @@ I would recommend setting up a virtual environment first (the second and third l
     
     git clone https://github.com/rccreager/hideface.git
     cd hideface
-    source built/apt_get.sh
+    source build/apt_get.sh
     python3 -m venv build/hideface_env
     source build/hideface_env/bin/activate
     pip3 install -r build/requirements.txt
 
 ## Running a Test Attack  
 
-For a test and example of how this package works, run `example_attack.py`, which will test 100 images from a subset of the WIDER-FACE dataset:
+For a test and example of how this package works, run `example_attack.py`, which will test 25 images (1 attack test each) from a subset of the WIDER-FACE dataset:
 
     python3 example_attack.py
 

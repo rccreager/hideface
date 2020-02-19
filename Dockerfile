@@ -8,5 +8,11 @@ RUN apt-get install -y python3-pip \
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-COPY build/requirements.txt /tmp/
-RUN pip3 install --upgrade pip && pip3 install -r /tmp/requirements.txt
+RUN mkdir /build
+RUN mkdir /data
+RUN mkdir /hideface
+COPY build/ /build
+COPY data/ /data
+COPY hideface/ /hideface
+COPY example_*.py /
+RUN pip3 install --upgrade pip && pip3 install -r /build/requirements.txt
