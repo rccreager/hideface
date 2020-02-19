@@ -22,8 +22,10 @@ Detectors are provided as a dictionary in the `run_attacks.py` script -- for now
 The easiest way to run this package is with Docker.
 1. Install [Docker](https://docs.docker.com/install/)
 2. Pull the Docker image from Docker Hub:
+
     docker pull rccreager/hideface:1.0
 3. Run the Docker image:
+
     docker run -it rccreager/hideface:1.0 
 4. Skip to the next section, ``Running a Test Attack''
  
@@ -41,7 +43,7 @@ I would recommend setting up a virtual environment first (the second and third l
     source build/hideface_env/bin/activate
     pip3 install -r build/requirements.txt
 
-## Running a Test Attack  
+## Usage 
 
 For a test and example of how this package works, run `example_attack.py`, which will test 25 images (1 attack test each) from a subset of the WIDER-FACE dataset:
 
